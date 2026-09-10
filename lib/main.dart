@@ -1,0 +1,71 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:kukula_app/core/theme/app_theme.dart';
+import 'package:kukula_app/core/routing/app_router.dart';
+import 'package:kukula_app/l10n/app_localizations.dart';
+import 'package:kukula_app/core/providers/locale_provider.dart';
+import 'package:kukula_app/core/providers/theme_provider.dart';
+import 'package:kukula_app/core/providers/farm_providers.dart';
+import 'package:kukula_app/core/enums/farm_type.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // ── Load saved farm settings from SharedPreferences ───────────────────
+  final prefs = await SharedPreferences.getInstance();
+  final savedFarmType = prefs.getString('farmType');
+  final savedFarmName = prefs.getString('farmName');
+
+  final farmType = savedFarmType != null
+      ? FarmType.values.firstWhere(
+          (e) => e.name == savedFarmType,
+          orElse: () => FarmType.both,
+        )
+      : FarmType.both;
+
+  final farmName = savedFarmName ?? 'My Poultry Farm';
+
+  runApp(
+    ProviderScope(
+      overrides: [
+        // Pre-seed providers with persisted values
+        farmTypeProvider.overrideWith((ref) => farmType),
+        farmNameProvider.overrideWith((ref) => farmName),
+      ],
+      child: const KukulaApp(),
+    ),
+  );
+}
+
+class KukulaApp extends ConsumerWidget {
+  const KukulaApp({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.watch(appRouterProvider);
+    final locale = ref.watch(localeProvider);
+    final themeMode = ref.watch(themeProvider);
+
+    return MaterialApp.router(
+      title: 'Easy Poultry Manager',
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: themeMode,
+      locale: locale,
+      supportedLocales: const [
+        Locale('en'),
+        Locale('si'),
+      ],
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      routerConfig: router,
+    );
+  }
+}

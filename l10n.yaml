@@ -1,0 +1,7 @@
+{
+  "intl_inputs": "lib/l10n/app_en.arb",
+  "output-localization-file": "app_localizations.dart",
+  "output-class": "AppLocalizations",
+  "preferred-supported-locales": ["en", "si"],
+  "nullable-getter": false
+}
