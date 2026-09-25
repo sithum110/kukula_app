@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 import 'package:kukula_app/core/providers/batch_providers.dart';
+import 'package:kukula_app/core/providers/finance_providers.dart';
 import 'package:kukula_app/core/theme/app_theme.dart';
+import 'package:kukula_app/features/finance/finance_model.dart';
 import 'package:kukula_app/features/meat_batches/batch_model.dart';
 import 'package:kukula_app/l10n/app_localizations.dart';
 
@@ -39,6 +42,9 @@ class _MeatSalesScreenState extends ConsumerState<MeatSalesScreen>
     final growingBatches =
         batches.where((b) => b.status == BatchStatus.growing).toList();
 
+    // Read the batchId passed via context.push(AppRoutes.meatSales, extra: batch.id)
+    final preSelectedId = GoRouterState.of(context).extra as String?;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.meatSale),
@@ -56,7 +62,7 @@ class _MeatSalesScreenState extends ConsumerState<MeatSalesScreen>
       body: TabBarView(
         controller: _tab,
         children: [
-          _AddSaleTab(batches: growingBatches),
+          _AddSaleTab(batches: growingBatches, preSelectedBatchId: preSelectedId),
           _SalesHistoryTab(sales: sales, batches: batches),
         ],
       ),
@@ -67,7 +73,8 @@ class _MeatSalesScreenState extends ConsumerState<MeatSalesScreen>
 // ── Add Sale Tab ──────────────────────────────────────────────────────────
 class _AddSaleTab extends ConsumerStatefulWidget {
   final List<BatchModel> batches;
-  const _AddSaleTab({required this.batches});
+  final String? preSelectedBatchId;
+  const _AddSaleTab({required this.batches, this.preSelectedBatchId});
 
   @override
   ConsumerState<_AddSaleTab> createState() => _AddSaleTabState();
@@ -84,6 +91,21 @@ class _AddSaleTabState extends ConsumerState<_AddSaleTab> {
   final _notesCtrl = TextEditingController();
   DateTime _date = DateTime.now();
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Pre-select the batch if navigated from a specific batch card
+    if (widget.preSelectedBatchId != null && widget.batches.isNotEmpty) {
+      _selectedBatch = widget.batches.firstWhere(
+        (b) => b.id == widget.preSelectedBatchId,
+        orElse: () => widget.batches.first,
+      );
+    } else if (widget.batches.length == 1) {
+      // Auto-select if only one growing batch
+      _selectedBatch = widget.batches.first;
+    }
+  }
 
   double get _total {
     if (_saleType == BroilerSaleType.liveBird) {
@@ -417,6 +439,22 @@ class _AddSaleTabState extends ConsumerState<_AddSaleTab> {
     ref.read(meatSalesProvider.notifier).addSale(sale);
     ref.read(batchListProvider.notifier).reduceBirds(
         _selectedBatch!.id, qty, reason: 'sale');
+
+    // ── Auto-create finance income entry for meat sales ────────────────────────
+    ref.read(financeProvider.notifier).addTransaction(
+      FinanceTransactionModel(
+        id: _uuid.v4(),
+        farmId: 'farm1',
+        type: TransactionType.income,
+        category: FinanceCategory.meatSales,
+        amount: sale.totalAmount,
+        description: _saleType == BroilerSaleType.liveBird
+            ? 'Meat sale: $qty birds (${_weightCtrl.text} kg) — ${_selectedBatch!.name}'
+            : 'Dressed sale: $qty birds — ${_selectedBatch!.name}',
+        date: _date,
+        createdAt: DateTime.now(),
+      ),
+    );
 
     if (mounted) {
       setState(() => _isLoading = false);

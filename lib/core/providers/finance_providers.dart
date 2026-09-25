@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
+import 'package:kukula_app/core/services/local_storage_service.dart';
 import 'package:kukula_app/features/finance/finance_model.dart';
 
 const _uuid = Uuid();
@@ -10,15 +11,38 @@ final financeProvider =
 
 class FinanceNotifier
     extends StateNotifier<List<FinanceTransactionModel>> {
-  FinanceNotifier() : super(_sampleTransactions());
+  FinanceNotifier() : super([]) {
+    _load();
+  }
 
-  void addTransaction(FinanceTransactionModel t) =>
-      state = [t, ...state];
+  // ── Persistence ────────────────────────────────────────────────────────────
+  Future<void> _load() async {
+    final raw = await LocalStorageService.loadFinance();
+    state = raw.map(FinanceTransactionModel.fromJson).toList()
+      ..sort((a, b) => b.date.compareTo(a.date));
+  }
 
-  void deleteTransaction(String id) =>
-      state = state.where((t) => t.id != id).toList();
+  void _persist() {
+    LocalStorageService.saveFinance(state.map((t) => t.toJson()).toList());
+  }
 
-  // ── Aggregates ────────────────────────────────────────────────────────
+  // ── Mutations ──────────────────────────────────────────────────────────────
+  void addTransaction(FinanceTransactionModel t) {
+    state = [t, ...state];
+    _persist();
+  }
+
+  void deleteTransaction(String id) {
+    state = state.where((t) => t.id != id).toList();
+    _persist();
+  }
+
+  void clearAll() {
+    state = [];
+    _persist();
+  }
+
+  // ── Aggregates ─────────────────────────────────────────────────────────────
   double get totalIncome => state
       .where((t) => t.type == TransactionType.income)
       .fold(0.0, (s, t) => s + t.amount);
@@ -126,95 +150,4 @@ class FinanceNotifier
 
   String _mon(int m) => ['','Jan','Feb','Mar','Apr','May','Jun',
       'Jul','Aug','Sep','Oct','Nov','Dec'][m];
-}
-
-// ── Sample Data ────────────────────────────────────────────────────────────
-List<FinanceTransactionModel> _sampleTransactions() {
-  final now = DateTime.now();
-  return [
-    FinanceTransactionModel(
-      id: _uuid.v4(), farmId: 'farm1',
-      type: TransactionType.income,
-      category: FinanceCategory.eggSales,
-      amount: 18500, description: '370 trays @ LKR 50/egg',
-      date: now, createdAt: now,
-    ),
-    FinanceTransactionModel(
-      id: _uuid.v4(), farmId: 'farm1',
-      type: TransactionType.expense,
-      category: FinanceCategory.feedCost,
-      amount: 9500, description: 'Layer pellets — 100kg',
-      date: now, createdAt: now,
-    ),
-    FinanceTransactionModel(
-      id: _uuid.v4(), farmId: 'farm1',
-      type: TransactionType.income,
-      category: FinanceCategory.meatSales,
-      amount: 32000, description: '40 broilers @ LKR 800',
-      date: now.subtract(const Duration(days: 1)), createdAt: now,
-    ),
-    FinanceTransactionModel(
-      id: _uuid.v4(), farmId: 'farm1',
-      type: TransactionType.expense,
-      category: FinanceCategory.labourCost,
-      amount: 25000, description: 'Monthly wages — 2 workers',
-      date: now.subtract(const Duration(days: 1)), createdAt: now,
-    ),
-    FinanceTransactionModel(
-      id: _uuid.v4(), farmId: 'farm1',
-      type: TransactionType.expense,
-      category: FinanceCategory.medicineCost,
-      amount: 3200, description: 'Vaccines + Amoxicillin',
-      date: now.subtract(const Duration(days: 2)), createdAt: now,
-    ),
-    FinanceTransactionModel(
-      id: _uuid.v4(), farmId: 'farm1',
-      type: TransactionType.income,
-      category: FinanceCategory.eggSales,
-      amount: 15000, description: '300 trays @ LKR 50/egg',
-      date: now.subtract(const Duration(days: 2)), createdAt: now,
-    ),
-    FinanceTransactionModel(
-      id: _uuid.v4(), farmId: 'farm1',
-      type: TransactionType.expense,
-      category: FinanceCategory.utilities,
-      amount: 4500, description: 'Electricity bill',
-      date: now.subtract(const Duration(days: 3)), createdAt: now,
-    ),
-    FinanceTransactionModel(
-      id: _uuid.v4(), farmId: 'farm1',
-      type: TransactionType.expense,
-      category: FinanceCategory.feedCost,
-      amount: 11200, description: 'Broiler starter — 120kg',
-      date: now.subtract(const Duration(days: 3)), createdAt: now,
-    ),
-    FinanceTransactionModel(
-      id: _uuid.v4(), farmId: 'farm1',
-      type: TransactionType.income,
-      category: FinanceCategory.meatSales,
-      amount: 24000, description: '30 broilers',
-      date: now.subtract(const Duration(days: 4)), createdAt: now,
-    ),
-    FinanceTransactionModel(
-      id: _uuid.v4(), farmId: 'farm1',
-      type: TransactionType.expense,
-      category: FinanceCategory.transport,
-      amount: 1800, description: 'Delivery to market',
-      date: now.subtract(const Duration(days: 4)), createdAt: now,
-    ),
-    FinanceTransactionModel(
-      id: _uuid.v4(), farmId: 'farm1',
-      type: TransactionType.income,
-      category: FinanceCategory.eggSales,
-      amount: 12000, description: 'Weekly egg sales',
-      date: now.subtract(const Duration(days: 5)), createdAt: now,
-    ),
-    FinanceTransactionModel(
-      id: _uuid.v4(), farmId: 'farm1',
-      type: TransactionType.expense,
-      category: FinanceCategory.equipment,
-      amount: 8500, description: 'Water nipple system repair',
-      date: now.subtract(const Duration(days: 6)), createdAt: now,
-    ),
-  ];
 }

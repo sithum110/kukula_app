@@ -967,6 +967,1182 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Flock'**
   String get flock;
+
+  /// No description provided for @exportAndShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Export & Share'**
+  String get exportAndShare;
+
+  /// No description provided for @chooseFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose File'**
+  String get chooseFile;
+
+  /// No description provided for @importRestore.
+  ///
+  /// In en, this message translates to:
+  /// **'Import / Restore'**
+  String get importRestore;
+
+  /// No description provided for @backupUpToDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup Up to Date'**
+  String get backupUpToDate;
+
+  /// No description provided for @noBackupYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No Backup Yet'**
+  String get noBackupYet;
+
+  /// No description provided for @exportFarmData.
+  ///
+  /// In en, this message translates to:
+  /// **'Export Farm Data'**
+  String get exportFarmData;
+
+  /// No description provided for @importFromFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Import from File'**
+  String get importFromFile;
+
+  /// No description provided for @clearAllData.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear All Data'**
+  String get clearAllData;
+
+  /// No description provided for @clearAllDataConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Permanently delete ALL farm data? Export a backup first!'**
+  String get clearAllDataConfirm;
+
+  /// No description provided for @dangerZone.
+  ///
+  /// In en, this message translates to:
+  /// **'Danger Zone'**
+  String get dangerZone;
+
+  /// No description provided for @whatsIncluded.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s Included in Backup'**
+  String get whatsIncluded;
+
+  /// No description provided for @cloudBackup.
+  ///
+  /// In en, this message translates to:
+  /// **'Cloud Backup'**
+  String get cloudBackup;
+
+  /// No description provided for @autoBackup.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto Backup'**
+  String get autoBackup;
+
+  /// No description provided for @syncNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync Now'**
+  String get syncNow;
+
+  /// No description provided for @autoSyncSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-Sync Settings'**
+  String get autoSyncSettings;
+
+  /// No description provided for @upgradeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Upgrade to Premium'**
+  String get upgradeTitle;
+
+  /// No description provided for @unlockPremium.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock Premium'**
+  String get unlockPremium;
+
+  /// No description provided for @whatYouGet.
+  ///
+  /// In en, this message translates to:
+  /// **'What you\'ll get'**
+  String get whatYouGet;
+
+  /// No description provided for @choosePlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your plan'**
+  String get choosePlan;
+
+  /// No description provided for @monthlyPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get monthlyPlan;
+
+  /// No description provided for @yearlyPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly'**
+  String get yearlyPlan;
+
+  /// No description provided for @lifetimePlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Lifetime'**
+  String get lifetimePlan;
+
+  /// No description provided for @perMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'/month'**
+  String get perMonth;
+
+  /// No description provided for @perYear.
+  ///
+  /// In en, this message translates to:
+  /// **'/year'**
+  String get perYear;
+
+  /// No description provided for @oneTime.
+  ///
+  /// In en, this message translates to:
+  /// **'one-time'**
+  String get oneTime;
+
+  /// No description provided for @popular.
+  ///
+  /// In en, this message translates to:
+  /// **'POPULAR'**
+  String get popular;
+
+  /// No description provided for @restorePurchases.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore Purchases'**
+  String get restorePurchases;
+
+  /// No description provided for @alreadyPremium.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re on Premium!'**
+  String get alreadyPremium;
+
+  /// No description provided for @thankYouPremium.
+  ///
+  /// In en, this message translates to:
+  /// **'Thank you for supporting Easy Poultry Manager. All premium features are unlocked.'**
+  String get thankYouPremium;
+
+  /// No description provided for @pdfReports.
+  ///
+  /// In en, this message translates to:
+  /// **'PDF Reports'**
+  String get pdfReports;
+
+  /// No description provided for @pdfReportsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate and share detailed farm reports'**
+  String get pdfReportsDesc;
+
+  /// No description provided for @cloudBackupFeature.
+  ///
+  /// In en, this message translates to:
+  /// **'Google Drive Backup'**
+  String get cloudBackupFeature;
+
+  /// No description provided for @cloudBackupDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-backup to Google Drive, restore from any device'**
+  String get cloudBackupDesc;
+
+  /// No description provided for @multiUser.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to 5 Workers'**
+  String get multiUser;
+
+  /// No description provided for @multiUserDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite your farm staff to manage records'**
+  String get multiUserDesc;
+
+  /// No description provided for @unlimitedFlocks.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited Flocks & Batches'**
+  String get unlimitedFlocks;
+
+  /// No description provided for @unlimitedFlocksDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'No cap on the number of active flocks or batches'**
+  String get unlimitedFlocksDesc;
+
+  /// No description provided for @fullHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Full History'**
+  String get fullHistory;
+
+  /// No description provided for @fullHistoryDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Access all records without time limits'**
+  String get fullHistoryDesc;
+
+  /// No description provided for @advancedCharts.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced Charts & P&L'**
+  String get advancedCharts;
+
+  /// No description provided for @advancedChartsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Detailed profit/loss analysis and trend charts'**
+  String get advancedChartsDesc;
+
+  /// No description provided for @reportsHub.
+  ///
+  /// In en, this message translates to:
+  /// **'Reports Hub'**
+  String get reportsHub;
+
+  /// No description provided for @flockSummaryReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Flock / Batch Summary'**
+  String get flockSummaryReport;
+
+  /// No description provided for @eggProductionReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Egg Production Report'**
+  String get eggProductionReport;
+
+  /// No description provided for @meatSalesReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Meat Sales Report'**
+  String get meatSalesReport;
+
+  /// No description provided for @feedingReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Feeding Report'**
+  String get feedingReport;
+
+  /// No description provided for @healthReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Health & Vaccination Report'**
+  String get healthReport;
+
+  /// No description provided for @financeReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Finance / P&L Report'**
+  String get financeReport;
+
+  /// No description provided for @fullFarmReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Farm Overview'**
+  String get fullFarmReport;
+
+  /// No description provided for @selectDateRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Date Range'**
+  String get selectDateRange;
+
+  /// No description provided for @from.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get from;
+
+  /// No description provided for @to.
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get to;
+
+  /// No description provided for @thisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'This Month'**
+  String get thisMonth;
+
+  /// No description provided for @lastMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Last Month'**
+  String get lastMonth;
+
+  /// No description provided for @last3Months.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 3 Months'**
+  String get last3Months;
+
+  /// No description provided for @custom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get custom;
+
+  /// No description provided for @previewReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview Report'**
+  String get previewReport;
+
+  /// No description provided for @shareReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Share Report'**
+  String get shareReport;
+
+  /// No description provided for @teamAndWorkers.
+  ///
+  /// In en, this message translates to:
+  /// **'Team & Workers'**
+  String get teamAndWorkers;
+
+  /// No description provided for @inviteCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite Code'**
+  String get inviteCode;
+
+  /// No description provided for @copyCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Code'**
+  String get copyCode;
+
+  /// No description provided for @shareInvite.
+  ///
+  /// In en, this message translates to:
+  /// **'Share Invite'**
+  String get shareInvite;
+
+  /// No description provided for @pendingInvite.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending Invites'**
+  String get pendingInvite;
+
+  /// No description provided for @noWorkers.
+  ///
+  /// In en, this message translates to:
+  /// **'No Workers Yet'**
+  String get noWorkers;
+
+  /// No description provided for @inviteFirstWorker.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite your first worker'**
+  String get inviteFirstWorker;
+
+  /// No description provided for @workerPermissions.
+  ///
+  /// In en, this message translates to:
+  /// **'Worker Permissions'**
+  String get workerPermissions;
+
+  /// No description provided for @canView.
+  ///
+  /// In en, this message translates to:
+  /// **'Can view'**
+  String get canView;
+
+  /// No description provided for @canAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Can add records'**
+  String get canAdd;
+
+  /// No description provided for @cannotDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot delete'**
+  String get cannotDelete;
+
+  /// No description provided for @cannotViewFinance.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot view financials'**
+  String get cannotViewFinance;
+
+  /// No description provided for @removeWorker.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove Worker'**
+  String get removeWorker;
+
+  /// No description provided for @confirmRemoveWorker.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this worker from the farm?'**
+  String get confirmRemoveWorker;
+
+  /// No description provided for @appearance.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get appearance;
+
+  /// No description provided for @darkMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark Mode'**
+  String get darkMode;
+
+  /// No description provided for @account.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get account;
+
+  /// No description provided for @notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notifications;
+
+  /// No description provided for @vaccinationReminders.
+  ///
+  /// In en, this message translates to:
+  /// **'Vaccination Reminders'**
+  String get vaccinationReminders;
+
+  /// No description provided for @lowStockAlerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Low Stock Alerts'**
+  String get lowStockAlerts;
+
+  /// No description provided for @medicineExpiryAlerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Medicine Expiry Alerts'**
+  String get medicineExpiryAlerts;
+
+  /// No description provided for @aboutApp.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get aboutApp;
+
+  /// No description provided for @appVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'App Version'**
+  String get appVersion;
+
+  /// No description provided for @privacyPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get privacyPolicy;
+
+  /// No description provided for @termsOfService.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of Service'**
+  String get termsOfService;
+
+  /// No description provided for @rateApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate the App'**
+  String get rateApp;
+
+  /// No description provided for @signOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Out'**
+  String get signOut;
+
+  /// No description provided for @confirmSignOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to sign out?'**
+  String get confirmSignOut;
+
+  /// No description provided for @manageWorkers.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Workers'**
+  String get manageWorkers;
+
+  /// No description provided for @backupAndRestore.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup & Restore'**
+  String get backupAndRestore;
+
+  /// No description provided for @editFarmName.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Farm Name'**
+  String get editFarmName;
+
+  /// No description provided for @editName.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Name'**
+  String get editName;
+
+  /// No description provided for @changeFarmType.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Farm Type'**
+  String get changeFarmType;
+
+  /// No description provided for @selectLanguageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Language'**
+  String get selectLanguageTitle;
+
+  /// No description provided for @premiumDevToggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium Mode (Dev Toggle)'**
+  String get premiumDevToggle;
+
+  /// No description provided for @plan.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan'**
+  String get plan;
+
+  /// No description provided for @premiumActive.
+  ///
+  /// In en, this message translates to:
+  /// **'👑 Premium — Active'**
+  String get premiumActive;
+
+  /// No description provided for @overdue.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue'**
+  String get overdue;
+
+  /// No description provided for @dueSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Due Soon'**
+  String get dueSoon;
+
+  /// No description provided for @upcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming'**
+  String get upcoming;
+
+  /// No description provided for @completed.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get completed;
+
+  /// No description provided for @markComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark Complete'**
+  String get markComplete;
+
+  /// No description provided for @vaccinationSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Vaccination Schedule'**
+  String get vaccinationSchedule;
+
+  /// No description provided for @medicineStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Medicine & Vaccine Stock'**
+  String get medicineStock;
+
+  /// No description provided for @expired.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired'**
+  String get expired;
+
+  /// No description provided for @expiringSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Expiring Soon'**
+  String get expiringSoon;
+
+  /// No description provided for @expiryDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Expiry Date'**
+  String get expiryDate;
+
+  /// No description provided for @threshold.
+  ///
+  /// In en, this message translates to:
+  /// **'Alert Threshold'**
+  String get threshold;
+
+  /// No description provided for @restock.
+  ///
+  /// In en, this message translates to:
+  /// **'Restock'**
+  String get restock;
+
+  /// No description provided for @addStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Stock'**
+  String get addStock;
+
+  /// No description provided for @addItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Item'**
+  String get addItem;
+
+  /// No description provided for @unit.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit'**
+  String get unit;
+
+  /// No description provided for @itemType.
+  ///
+  /// In en, this message translates to:
+  /// **'Item Type'**
+  String get itemType;
+
+  /// No description provided for @medicine.
+  ///
+  /// In en, this message translates to:
+  /// **'Medicine'**
+  String get medicine;
+
+  /// No description provided for @vaccine.
+  ///
+  /// In en, this message translates to:
+  /// **'Vaccine'**
+  String get vaccine;
+
+  /// No description provided for @netProfit.
+  ///
+  /// In en, this message translates to:
+  /// **'Net Profit'**
+  String get netProfit;
+
+  /// No description provided for @netLoss.
+  ///
+  /// In en, this message translates to:
+  /// **'Net Loss'**
+  String get netLoss;
+
+  /// No description provided for @thisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'This Week'**
+  String get thisWeek;
+
+  /// No description provided for @breakdownByCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Breakdown by Category'**
+  String get breakdownByCategory;
+
+  /// No description provided for @incomeVsExpense.
+  ///
+  /// In en, this message translates to:
+  /// **'Income vs Expense'**
+  String get incomeVsExpense;
+
+  /// No description provided for @profitMargin.
+  ///
+  /// In en, this message translates to:
+  /// **'Profit Margin'**
+  String get profitMargin;
+
+  /// No description provided for @layerChickPurchase.
+  ///
+  /// In en, this message translates to:
+  /// **'Layer Chick Purchase'**
+  String get layerChickPurchase;
+
+  /// No description provided for @docPurchase.
+  ///
+  /// In en, this message translates to:
+  /// **'DOC Purchase'**
+  String get docPurchase;
+
+  /// No description provided for @labour.
+  ///
+  /// In en, this message translates to:
+  /// **'Labour'**
+  String get labour;
+
+  /// No description provided for @utilities.
+  ///
+  /// In en, this message translates to:
+  /// **'Electricity / Water'**
+  String get utilities;
+
+  /// No description provided for @processing.
+  ///
+  /// In en, this message translates to:
+  /// **'Processing'**
+  String get processing;
+
+  /// No description provided for @spentHenSale.
+  ///
+  /// In en, this message translates to:
+  /// **'Spent Hen Sale'**
+  String get spentHenSale;
+
+  /// No description provided for @liveBirdSale.
+  ///
+  /// In en, this message translates to:
+  /// **'Live Bird Sale'**
+  String get liveBirdSale;
+
+  /// No description provided for @feedCost.
+  ///
+  /// In en, this message translates to:
+  /// **'Feed Cost'**
+  String get feedCost;
+
+  /// No description provided for @medicineCost.
+  ///
+  /// In en, this message translates to:
+  /// **'Medicine Cost'**
+  String get medicineCost;
+
+  /// No description provided for @vaccineCost.
+  ///
+  /// In en, this message translates to:
+  /// **'Vaccine Cost'**
+  String get vaccineCost;
+
+  /// No description provided for @other.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get other;
+
+  /// No description provided for @addIncome.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Income'**
+  String get addIncome;
+
+  /// No description provided for @addExpense.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Expense'**
+  String get addExpense;
+
+  /// No description provided for @description.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get description;
+
+  /// No description provided for @linkedFlock.
+  ///
+  /// In en, this message translates to:
+  /// **'Linked Flock'**
+  String get linkedFlock;
+
+  /// No description provided for @linkedBatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Linked Batch'**
+  String get linkedBatch;
+
+  /// No description provided for @todaysFeed.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s Feed'**
+  String get todaysFeed;
+
+  /// No description provided for @weeklyUsage.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly Usage'**
+  String get weeklyUsage;
+
+  /// No description provided for @monthlyCost.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly Cost'**
+  String get monthlyCost;
+
+  /// No description provided for @stockValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Stock Value'**
+  String get stockValue;
+
+  /// No description provided for @addFeedType.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Feed Type'**
+  String get addFeedType;
+
+  /// No description provided for @feedTypeName.
+  ///
+  /// In en, this message translates to:
+  /// **'Feed Type Name'**
+  String get feedTypeName;
+
+  /// No description provided for @brand.
+  ///
+  /// In en, this message translates to:
+  /// **'Brand'**
+  String get brand;
+
+  /// No description provided for @openingStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening Stock (kg)'**
+  String get openingStock;
+
+  /// No description provided for @lowStockThreshold.
+  ///
+  /// In en, this message translates to:
+  /// **'Low Stock Threshold (kg)'**
+  String get lowStockThreshold;
+
+  /// No description provided for @pricePerKgLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Price per kg (LKR)'**
+  String get pricePerKgLabel;
+
+  /// No description provided for @allFlocks.
+  ///
+  /// In en, this message translates to:
+  /// **'All Flocks'**
+  String get allFlocks;
+
+  /// No description provided for @feedSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Feed Summary'**
+  String get feedSummary;
+
+  /// No description provided for @mortalityRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Mortality Rate'**
+  String get mortalityRate;
+
+  /// No description provided for @ageInDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Age (days)'**
+  String get ageInDays;
+
+  /// No description provided for @addMortality.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Mortality'**
+  String get addMortality;
+
+  /// No description provided for @flockPurpose.
+  ///
+  /// In en, this message translates to:
+  /// **'Flock Purpose'**
+  String get flockPurpose;
+
+  /// No description provided for @layerHens.
+  ///
+  /// In en, this message translates to:
+  /// **'Layer Hens'**
+  String get layerHens;
+
+  /// No description provided for @broilerChickens.
+  ///
+  /// In en, this message translates to:
+  /// **'Broiler Chickens'**
+  String get broilerChickens;
+
+  /// No description provided for @closeFlock.
+  ///
+  /// In en, this message translates to:
+  /// **'Close Flock'**
+  String get closeFlock;
+
+  /// No description provided for @flockDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Flock Details'**
+  String get flockDetail;
+
+  /// No description provided for @batchDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Batch Details'**
+  String get batchDetail;
+
+  /// No description provided for @supplier.
+  ///
+  /// In en, this message translates to:
+  /// **'Supplier'**
+  String get supplier;
+
+  /// No description provided for @closeBatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Close Batch'**
+  String get closeBatch;
+
+  /// No description provided for @logMortality.
+  ///
+  /// In en, this message translates to:
+  /// **'Log Mortality'**
+  String get logMortality;
+
+  /// No description provided for @addBirdEvent.
+  ///
+  /// In en, this message translates to:
+  /// **'Log Bird Event'**
+  String get addBirdEvent;
+
+  /// No description provided for @purchase.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchase'**
+  String get purchase;
+
+  /// No description provided for @transfer.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer'**
+  String get transfer;
+
+  /// No description provided for @culling.
+  ///
+  /// In en, this message translates to:
+  /// **'Culling'**
+  String get culling;
+
+  /// No description provided for @saleEvent.
+  ///
+  /// In en, this message translates to:
+  /// **'Sale'**
+  String get saleEvent;
+
+  /// No description provided for @goodEggs.
+  ///
+  /// In en, this message translates to:
+  /// **'Good Eggs'**
+  String get goodEggs;
+
+  /// No description provided for @totalTrays.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Trays'**
+  String get totalTrays;
+
+  /// No description provided for @eggsByTray.
+  ///
+  /// In en, this message translates to:
+  /// **'Sell by Tray'**
+  String get eggsByTray;
+
+  /// No description provided for @eggsByUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'Sell by Egg'**
+  String get eggsByUnit;
+
+  /// No description provided for @saleType.
+  ///
+  /// In en, this message translates to:
+  /// **'Sale Type'**
+  String get saleType;
+
+  /// No description provided for @buyerContact.
+  ///
+  /// In en, this message translates to:
+  /// **'Buyer Contact'**
+  String get buyerContact;
+
+  /// No description provided for @alertCenterTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Alert Center'**
+  String get alertCenterTitle;
+
+  /// No description provided for @lowFeedStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Feed Stock Low'**
+  String get lowFeedStock;
+
+  /// No description provided for @lowMedicineStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Medicine / Vaccine Low'**
+  String get lowMedicineStock;
+
+  /// No description provided for @medicineExpiringSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Medicine Expiring Soon'**
+  String get medicineExpiringSoon;
+
+  /// No description provided for @medicineExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Medicine Expired'**
+  String get medicineExpired;
+
+  /// No description provided for @vaccinationOverdue.
+  ///
+  /// In en, this message translates to:
+  /// **'Vaccination Overdue'**
+  String get vaccinationOverdue;
+
+  /// No description provided for @vaccinationDueSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Vaccination Due Soon'**
+  String get vaccinationDueSoon;
+
+  /// No description provided for @dismissAlert.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss Alert'**
+  String get dismissAlert;
+
+  /// No description provided for @markAllRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark All Read'**
+  String get markAllRead;
+
+  /// No description provided for @restock_action.
+  ///
+  /// In en, this message translates to:
+  /// **'Restock'**
+  String get restock_action;
+
+  /// No description provided for @stockOverview.
+  ///
+  /// In en, this message translates to:
+  /// **'Stock Overview'**
+  String get stockOverview;
+
+  /// No description provided for @feedTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Feed'**
+  String get feedTab;
+
+  /// No description provided for @medicineTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Medicine'**
+  String get medicineTab;
+
+  /// No description provided for @eggsTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Eggs'**
+  String get eggsTab;
+
+  /// No description provided for @stockSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Stock Summary'**
+  String get stockSummary;
+
+  /// No description provided for @estimatedValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated Value'**
+  String get estimatedValue;
+
+  /// No description provided for @totalStockValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Stock Value'**
+  String get totalStockValue;
+
+  /// No description provided for @lowStockItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Low Stock Items'**
+  String get lowStockItems;
+
+  /// No description provided for @critesItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Critical Items'**
+  String get critesItems;
+
+  /// No description provided for @allStockGood.
+  ///
+  /// In en, this message translates to:
+  /// **'All Stock OK'**
+  String get allStockGood;
+
+  /// No description provided for @trays.
+  ///
+  /// In en, this message translates to:
+  /// **'Trays'**
+  String get trays;
+
+  /// No description provided for @crates.
+  ///
+  /// In en, this message translates to:
+  /// **'Crates'**
+  String get crates;
+
+  /// No description provided for @recentCollections.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent Collections'**
+  String get recentCollections;
+
+  /// No description provided for @collectionThisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'This Week'**
+  String get collectionThisWeek;
+
+  /// No description provided for @todayCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get todayCollection;
+
+  /// No description provided for @estValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Est. Value'**
+  String get estValue;
 }
 
 class _AppLocalizationsDelegate

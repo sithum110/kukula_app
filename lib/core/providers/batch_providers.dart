@@ -1,8 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
+import 'package:kukula_app/core/services/local_storage_service.dart';
 import 'package:kukula_app/features/meat_batches/batch_model.dart';
-
-const _uuid = Uuid();
 
 final batchListProvider =
     StateNotifierProvider<BatchNotifier, List<BatchModel>>((ref) {
@@ -15,18 +13,32 @@ final meatSalesProvider =
 });
 
 class BatchNotifier extends StateNotifier<List<BatchModel>> {
-  BatchNotifier() : super(_sampleBatches());
+  BatchNotifier() : super([]) {
+    _load();
+  }
+
+  Future<void> _load() async {
+    final raw = await LocalStorageService.loadBatches();
+    state = raw.map(BatchModel.fromJson).toList();
+  }
+
+  void _persist() {
+    LocalStorageService.saveBatches(state.map((b) => b.toJson()).toList());
+  }
 
   void addBatch(BatchModel batch) {
     state = [...state, batch];
+    _persist();
   }
 
   void updateBatch(BatchModel updated) {
     state = state.map((b) => b.id == updated.id ? updated : b).toList();
+    _persist();
   }
 
   void deleteBatch(String id) {
     state = state.where((b) => b.id != id).toList();
+    _persist();
   }
 
   void closeBatch(String id) {
@@ -39,6 +51,7 @@ class BatchNotifier extends StateNotifier<List<BatchModel>> {
         status: BatchStatus.closed, createdAt: b.createdAt,
       );
     }).toList();
+    _persist();
   }
 
   void reduceBirds(String batchId, int count, {String reason = 'mortality'}) {
@@ -53,14 +66,32 @@ class BatchNotifier extends StateNotifier<List<BatchModel>> {
         status: newStatus, createdAt: b.createdAt,
       );
     }).toList();
+    _persist();
+  }
+
+  void clearAll() {
+    state = [];
+    _persist();
   }
 }
 
 class MeatSalesNotifier extends StateNotifier<List<MeatSaleModel>> {
-  MeatSalesNotifier() : super([]);
+  MeatSalesNotifier() : super([]) {
+    _load();
+  }
+
+  Future<void> _load() async {
+    final raw = await LocalStorageService.loadMeatSales();
+    state = raw.map(MeatSaleModel.fromJson).toList();
+  }
+
+  void _persist() {
+    LocalStorageService.saveMeatSales(state.map((s) => s.toJson()).toList());
+  }
 
   void addSale(MeatSaleModel sale) {
     state = [...state, sale];
+    _persist();
   }
 
   List<MeatSaleModel> salesForBatch(String batchId) =>
@@ -68,19 +99,9 @@ class MeatSalesNotifier extends StateNotifier<List<MeatSaleModel>> {
 
   double totalRevenueForBatch(String batchId) => salesForBatch(batchId)
       .fold(0, (sum, s) => sum + s.totalAmount);
-}
 
-List<BatchModel> _sampleBatches() => [
-  BatchModel(
-    id: _uuid.v4(), farmId: 'farm1', name: 'Batch Jan 2026',
-    breed: 'Cobb 500', arrivalDate: DateTime.now().subtract(const Duration(days: 42)),
-    initialCount: 500, currentCount: 488, supplier: 'Siyane Hatchery',
-    status: BatchStatus.growing, createdAt: DateTime.now().subtract(const Duration(days: 42)),
-  ),
-  BatchModel(
-    id: _uuid.v4(), farmId: 'farm1', name: 'Batch Feb 2026',
-    breed: 'Ross 308', arrivalDate: DateTime.now().subtract(const Duration(days: 18)),
-    initialCount: 600, currentCount: 595, supplier: 'Lanka Hatchery',
-    status: BatchStatus.growing, createdAt: DateTime.now().subtract(const Duration(days: 18)),
-  ),
-];
+  void clearAll() {
+    state = [];
+    _persist();
+  }
+}

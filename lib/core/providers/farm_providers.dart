@@ -1,34 +1,46 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
-import 'package:kukula_app/features/flocks/flock_model.dart';
 import 'package:kukula_app/core/enums/farm_type.dart';
+import 'package:kukula_app/core/services/local_storage_service.dart';
+import 'package:kukula_app/features/flocks/flock_model.dart';
 
-const _uuid = Uuid();
-
-// ── Farm Type Provider (from onboarding selection) ─────────────────────────
+// ── Farm settings (SharedPreferences via main.dart overrides) ──────────────
 final farmTypeProvider = StateProvider<FarmType>((ref) => FarmType.both);
 final farmNameProvider = StateProvider<String>((ref) => 'My Poultry Farm');
 final isPremiumProvider = StateProvider<bool>((ref) => false);
 
-// ── Flock Provider ─────────────────────────────────────────────────────────
+// ── Flock Provider (persisted) ─────────────────────────────────────────────
 final flockListProvider =
     StateNotifierProvider<FlockNotifier, List<FlockModel>>((ref) {
   return FlockNotifier();
 });
 
 class FlockNotifier extends StateNotifier<List<FlockModel>> {
-  FlockNotifier() : super(_sampleFlocks());
+  FlockNotifier() : super([]) {
+    _load();
+  }
+
+  Future<void> _load() async {
+    final raw = await LocalStorageService.loadFlocks();
+    state = raw.map(FlockModel.fromJson).toList();
+  }
+
+  void _persist() {
+    LocalStorageService.saveFlocks(state.map((f) => f.toJson()).toList());
+  }
 
   void addFlock(FlockModel flock) {
     state = [...state, flock];
+    _persist();
   }
 
   void updateFlock(FlockModel updated) {
     state = state.map((f) => f.id == updated.id ? updated : f).toList();
+    _persist();
   }
 
   void deleteFlock(String id) {
     state = state.where((f) => f.id != id).toList();
+    _persist();
   }
 
   void closeFlock(String id) {
@@ -42,9 +54,16 @@ class FlockNotifier extends StateNotifier<List<FlockModel>> {
       );
       return f;
     }).toList();
+    _persist();
   }
 
-  void logBirdEvent(String flockId, BirdEventType type, int count, {String? cause, String? notes}) {
+  void clearAll() {
+    state = [];
+    _persist();
+  }
+
+  void logBirdEvent(String flockId, BirdEventType type, int count,
+      {String? cause, String? notes}) {
     state = state.map((f) {
       if (f.id != flockId) return f;
       final newCount = type.isReduction
@@ -58,23 +77,6 @@ class FlockNotifier extends StateNotifier<List<FlockModel>> {
         createdAt: f.createdAt,
       );
     }).toList();
+    _persist();
   }
 }
-
-// Sample data so Phase 2 looks populated
-List<FlockModel> _sampleFlocks() => [
-  FlockModel(
-    id: _uuid.v4(), farmId: 'farm1', name: 'Flock A — Layers',
-    breed: 'ISA Brown', purpose: FlockPurpose.layer, currentCount: 450,
-    initialCount: 500, pen: 'House 1',
-    arrivalDate: DateTime.now().subtract(const Duration(days: 120)),
-    status: FlockStatus.active, createdAt: DateTime.now().subtract(const Duration(days: 120)),
-  ),
-  FlockModel(
-    id: _uuid.v4(), farmId: 'farm1', name: 'Flock B — Layers',
-    breed: 'Lohmann Brown', purpose: FlockPurpose.layer, currentCount: 380,
-    initialCount: 400, pen: 'House 2',
-    arrivalDate: DateTime.now().subtract(const Duration(days: 60)),
-    status: FlockStatus.active, createdAt: DateTime.now().subtract(const Duration(days: 60)),
-  ),
-];

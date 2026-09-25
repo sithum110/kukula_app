@@ -78,4 +78,32 @@ class FinanceTransactionModel {
     required this.date,
     required this.createdAt,
   });
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'farmId': farmId,
+    'type': type.name,
+    'category': category.name,
+    'amount': amount,
+    'description': description,
+    'reference': reference,
+    'date': date.toIso8601String(),
+    'createdAt': createdAt.toIso8601String(),
+  };
+
+  factory FinanceTransactionModel.fromJson(Map<String, dynamic> j) =>
+      FinanceTransactionModel(
+        id: j['id'] as String,
+        farmId: (j['farmId'] as String?) ?? 'farm1',
+        type: TransactionType.values.firstWhere(
+            (e) => e.name == j['type'], orElse: () => TransactionType.income),
+        category: FinanceCategory.values.firstWhere(
+            (e) => e.name == j['category'],
+            orElse: () => FinanceCategory.otherIncome),
+        amount: (j['amount'] as num).toDouble(),
+        description: j['description'] as String?,
+        reference: j['reference'] as String?,
+        date: DateTime.parse(j['date'] as String),
+        createdAt: DateTime.parse(j['createdAt'] as String),
+      );
 }

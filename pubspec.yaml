@@ -21,22 +21,46 @@ dependencies:
   # Charts
   fl_chart: ^0.69.0
 
-  # Localization (must match flutter_localizations)
+  # Localization
   intl: ^0.20.3
 
   # Utilities
   uuid: ^4.4.2
   shared_preferences: ^2.3.2
+  path: ^1.9.0
 
-  # PDF Generation & Sharing (Phase 8)
+  # PDF Generation & Sharing
   pdf: ^3.11.1
   printing: ^5.13.2
   share_plus: ^10.0.3
+
+  # Backup & Restore
+  path_provider: ^2.1.4
+  file_picker: ^8.1.2
+
+  # Billing / Subscription
+  in_app_purchase: ^3.2.0
+
+  # ── Phase 12A: Offline SQLite Persistence (Drift) ─────────────────────────
+  drift: ^2.22.1
+  sqlite3_flutter_libs: ^0.5.0
+  # sqlite3 is a transitive dep of sqlite3_flutter_libs
+
+  # ── Phase 12B: Firebase Auth ──────────────────────────────────────────────
+  firebase_core: ^3.6.0
+  firebase_auth: ^5.3.1
+  google_sign_in: ^6.2.1
+
+  # ── Phase 12C: Firestore Sync ─────────────────────────────────────────────
+  cloud_firestore: ^5.4.4
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+  # Drift code generation
+  drift_dev: ^2.22.1
+  build_runner: ^2.4.13
 
 flutter:
   uses-material-design: true

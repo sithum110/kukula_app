@@ -11,7 +11,7 @@ final eggRecordListProvider =
 });
 
 class EggRecordNotifier extends StateNotifier<List<EggRecordModel>> {
-  EggRecordNotifier() : super(_sampleRecords());
+  EggRecordNotifier() : super([]) {}
 
   void addRecord(EggRecordModel record) {
     state = [record, ...state]; // newest first
@@ -21,6 +21,8 @@ class EggRecordNotifier extends StateNotifier<List<EggRecordModel>> {
   void deleteRecord(String id) {
     state = state.where((r) => r.id != id).toList();
   }
+
+  void clearAll() => state = [];
 
   // Today's total
   int get todayTotal {
@@ -59,6 +61,7 @@ class EggStockNotifier extends StateNotifier<int> {
 
   void addEggs(int count) => state = state + count;
   void removeEggs(int count) => state = (state - count).clamp(0, state + count);
+  void clearAll() => state = 0;
   int get trays => state ~/ 30;
 }
 
@@ -69,11 +72,13 @@ final eggSaleListProvider =
 });
 
 class EggSaleNotifier extends StateNotifier<List<EggSaleModel>> {
-  EggSaleNotifier() : super(_sampleSales());
+  EggSaleNotifier() : super([]) {}
 
   void addSale(EggSaleModel sale) {
     state = [sale, ...state];
   }
+
+  void clearAll() => state = [];
 
   double get totalRevenue => state
       .where((s) => s.saleType == EggDispositionType.sale)

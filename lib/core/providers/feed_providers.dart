@@ -11,7 +11,7 @@ final feedTypeListProvider =
 });
 
 class FeedTypeNotifier extends StateNotifier<List<FeedTypeModel>> {
-  FeedTypeNotifier() : super(_sampleFeedTypes());
+  FeedTypeNotifier() : super([]) {}
 
   void addFeedType(FeedTypeModel ft) => state = [...state, ft];
 
@@ -42,6 +42,8 @@ class FeedTypeNotifier extends StateNotifier<List<FeedTypeModel>> {
       state.where((f) => f.isLowStock).toList();
 
   int get lowStockCount => lowStockItems.length;
+
+  void clearAll() => state = [];
 }
 
 // ── Feed Log Provider ─────────────────────────────────────────────────────
@@ -51,11 +53,13 @@ final feedLogListProvider =
 });
 
 class FeedLogNotifier extends StateNotifier<List<FeedLogModel>> {
-  FeedLogNotifier() : super(_sampleLogs());
+  FeedLogNotifier() : super([]) {}
 
   void addLog(FeedLogModel log) => state = [log, ...state];
 
   void deleteLog(String id) => state = state.where((l) => l.id != id).toList();
+
+  void clearAll() => state = [];
 
   double get totalKgThisWeek {
     final weekAgo = DateTime.now().subtract(const Duration(days: 7));
@@ -107,6 +111,8 @@ class FeedPurchaseNotifier extends StateNotifier<List<FeedStockPurchaseModel>> {
   FeedPurchaseNotifier() : super([]);
 
   void addPurchase(FeedStockPurchaseModel p) => state = [p, ...state];
+
+  void clearAll() => state = [];
 }
 
 // ── Sample Data ───────────────────────────────────────────────────────────

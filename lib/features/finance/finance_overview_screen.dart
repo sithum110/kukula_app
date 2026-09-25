@@ -603,55 +603,57 @@ class _DailyNetChart extends StatelessWidget {
           const SizedBox(height: 16),
           SizedBox(
             height: 120,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: List.generate(dailyNet.length, (i) {
-                final val = dailyNet[i];
-                final barPct = maxAbs > 0 ? val.abs() / maxAbs : 0.0;
-                final isPos = val >= 0;
-                return Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 3),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        // Amount label
-                        if (val != 0)
+            child: ClipRect(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: List.generate(dailyNet.length, (i) {
+                  final val = dailyNet[i];
+                  final barPct = maxAbs > 0 ? val.abs() / maxAbs : 0.0;
+                  final isPos = val >= 0;
+                  return Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 3),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          if (val != 0)
+                            Text(
+                              val.abs() >= 1000
+                                  ? '${(val.abs() / 1000).toStringAsFixed(1)}k'
+                                  : val.abs().toStringAsFixed(0),
+                              style: TextStyle(
+                                  fontSize: 9,
+                                  color: isPos
+                                      ? AppColors.success
+                                      : AppColors.error),
+                            ),
+                          const SizedBox(height: 2),
+                          AnimatedContainer(
+                            duration: Duration(milliseconds: 400 + i * 60),
+                            curve: Curves.easeOut,
+                            height: val == 0
+                                ? 4.0
+                                : (barPct * 84).clamp(4.0, 84.0),
+                            decoration: BoxDecoration(
+                              color: isPos
+                                  ? AppColors.success.withValues(alpha: 0.75)
+                                  : AppColors.error.withValues(alpha: 0.75),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
                           Text(
-                            val.abs() >= 1000
-                                ? '${(val.abs() / 1000).toStringAsFixed(1)}k'
-                                : val.abs().toStringAsFixed(0),
-                            style: TextStyle(
-                                fontSize: 9,
-                                color: isPos
-                                    ? AppColors.success
-                                    : AppColors.error),
-                          ),
-                        const SizedBox(height: 2),
-                        // Bar
-                        AnimatedContainer(
-                          duration: Duration(milliseconds: 400 + i * 60),
-                          curve: Curves.easeOut,
-                          height: val == 0 ? 4 : (barPct * 90).clamp(4, 90),
-                          decoration: BoxDecoration(
-                            color: isPos
-                                ? AppColors.success
-                                    .withValues(alpha: 0.75)
-                                : AppColors.error.withValues(alpha: 0.75),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        // Day label
-                        Text(days[i],
+                            days[i],
                             style: const TextStyle(
                                 fontSize: 9,
-                                color: AppColors.textHintDark)),
-                      ],
+                                color: AppColors.textHintDark),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              }),
+                  );
+                }),
+              ),
             ),
           ),
         ],

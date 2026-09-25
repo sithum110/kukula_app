@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kukula_app/core/enums/farm_type.dart';
+import 'package:kukula_app/core/providers/auth_provider.dart';
 import 'package:kukula_app/core/providers/farm_providers.dart';
 import 'package:kukula_app/core/providers/locale_provider.dart';
 import 'package:kukula_app/core/providers/theme_provider.dart';
@@ -121,14 +122,16 @@ class SettingsScreen extends ConsumerWidget {
             title: '💎 Subscription',
             children: [
               if (!isPremium)
-                _PremiumUpgradeTile()
+                _PremiumUpgradeTile(
+                  onTap: () => context.push(AppRoutes.subscription),
+                )
               else
                 _SettingsTile(
                   icon: Icons.workspace_premium_outlined,
                   label: 'Plan',
                   value: '👑 Premium — Active',
                   valueColor: AppColors.premiumGold,
-                  onTap: null,
+                  onTap: () => context.push(AppRoutes.subscription),
                 ),
               // Dev toggle to test premium/free
               _SettingsSwitchTile(
@@ -333,7 +336,18 @@ class SettingsScreen extends ConsumerWidget {
       ),
     );
     if (confirmed == true && context.mounted) {
-      context.go(AppRoutes.welcome);
+      // Try Firebase sign out (may fail on web without full config — that's OK)
+      try {
+        await ref.read(authNotifierProvider.notifier).signOut();
+      } catch (_) {
+        // Ignore Firebase errors — still sign out locally
+      }
+      // Always clear persisted farm data and navigate
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('farmName');
+      await prefs.remove('farmType');
+      await prefs.remove('locale');
+      if (context.mounted) context.go(AppRoutes.welcome);
     }
   }
 }
@@ -574,6 +588,9 @@ class _SettingsSwitchTile extends StatelessWidget {
 
 // ── Premium Upgrade Tile ───────────────────────────────────────────────────
 class _PremiumUpgradeTile extends StatelessWidget {
+  final VoidCallback? onTap;
+  const _PremiumUpgradeTile({this.onTap});
+
   @override
   Widget build(BuildContext context) {
     return ListTile(
@@ -599,7 +616,7 @@ class _PremiumUpgradeTile extends StatelessWidget {
                 color: Colors.black,
                 fontWeight: FontWeight.w700)),
       ),
-      onTap: () {},
+      onTap: onTap,
     );
   }
 }

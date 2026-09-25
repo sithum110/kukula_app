@@ -101,7 +101,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         selectedIndex: _selectedIndex,
         onDestinationSelected: (i) {
           setState(() => _selectedIndex = i);
-          context.go(navItems[i].route);
+          final route = navItems[i].route;
+          if (route == AppRoutes.dashboard) {
+            // Home: go() clears any pushed screens and returns to dashboard root
+            context.go(AppRoutes.dashboard);
+          } else {
+            // Other tabs: push() keeps dashboard in the stack — Back returns here
+            context.push(route);
+          }
         },
         destinations: navItems
             .map((item) => NavigationDestination(

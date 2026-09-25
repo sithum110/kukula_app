@@ -183,7 +183,8 @@ class _AddBatchScreenState extends ConsumerState<AddBatchScreen> {
             ),
             const SizedBox(height: 12),
             OutlinedButton(
-                onPressed: () => context.pop(), child: Text(l10n.cancel)),
+                onPressed: () => context.pop(),
+                child: Text(l10n.cancel)),
           ],
         ),
       ),
@@ -233,6 +234,7 @@ class _AddBatchScreenState extends ConsumerState<AddBatchScreen> {
           behavior: SnackBarBehavior.floating,
         ),
       );
+      // Navigate back to batch list
       context.pop();
     }
   }

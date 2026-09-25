@@ -103,13 +103,12 @@ class WelcomeScreen extends ConsumerWidget {
 
                   // CTA buttons
                   ElevatedButton(
-                    onPressed: () => context.go(AppRoutes.accountDetails),
+                    onPressed: () => context.push(AppRoutes.signUp),
                     child: Text(l10n.getStarted),
                   ),
                   const SizedBox(height: 12),
                   OutlinedButton(
-                    onPressed: () => context.go(AppRoutes.accountDetails,
-                        extra: {'mode': 'login'}),
+                    onPressed: () => context.push(AppRoutes.login),
                     child: Text(l10n.login),
                   ),
                   const SizedBox(height: 32),

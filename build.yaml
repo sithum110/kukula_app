@@ -1,0 +1,7 @@
+targets:
+  $default:
+    builders:
+      drift_dev:
+        options:
+          generate_connect_constructor: false
+          use_data_class_name_for_companions: false

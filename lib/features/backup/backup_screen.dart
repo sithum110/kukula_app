@@ -1,14 +1,8 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kukula_app/core/providers/batch_providers.dart';
-import 'package:kukula_app/core/providers/egg_providers.dart';
 import 'package:kukula_app/core/providers/farm_providers.dart';
-import 'package:kukula_app/core/providers/feed_providers.dart';
-import 'package:kukula_app/core/providers/finance_providers.dart';
-import 'package:kukula_app/core/providers/health_providers.dart';
+import 'package:kukula_app/core/services/local_backup_service.dart';
 import 'package:kukula_app/core/theme/app_theme.dart';
-import 'package:share_plus/share_plus.dart';
 
 // ── Backup Screen ──────────────────────────────────────────────────────────
 class BackupScreen extends ConsumerStatefulWidget {
@@ -23,6 +17,22 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
   bool _isImporting = false;
   DateTime? _lastBackup;
   String? _lastBackupSize;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLastBackupInfo();
+  }
+
+  Future<void> _loadLastBackupInfo() async {
+    final info = await LocalBackupService.getLastBackupInfo();
+    if (mounted && info.date != null) {
+      setState(() {
+        _lastBackup = info.date;
+        _lastBackupSize = info.size;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +72,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
             buttonLabel: 'Choose File',
             buttonColor: AppColors.info,
             isLoading: _isImporting,
-            onTap: () => _showImportComingSoon(context),
+            onTap: _importData,
           ),
 
           const SizedBox(height: 20),
@@ -96,101 +106,48 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
 
   Future<void> _exportData() async {
     setState(() => _isExporting = true);
-
     try {
-      // Gather data from all providers
-      final flocks = ref.read(flockListProvider);
-      final batches = ref.read(batchListProvider);
-      final eggCollections = ref.read(eggRecordListProvider);
-      final eggSales = ref.read(eggSaleListProvider);
-      final feedLogs = ref.read(feedLogListProvider);
-      final feedTypes = ref.read(feedTypeListProvider);
-      final healthRecords = ref.read(healthRecordListProvider);
-      final vaccSchedule = ref.read(vaccinationScheduleProvider);
-      final medicineStock = ref.read(medicineStockProvider);
-      // FinanceNotifier extends StateNotifier<List<...>> so use .state
-      final transactions = ref.read(financeProvider);
-
-      final backup = {
-        'version': '1.0',
-        'exportedAt': DateTime.now().toIso8601String(),
-        'appName': 'Easy Poultry Manager',
-        'data': {
-          'flocks': flocks.map((e) => e.toJson()).toList(),
-          'batches': batches.map((e) => e.toJson()).toList(),
-          'eggCollections': eggCollections.map((e) => e.toJson()).toList(),
-          'eggSales': eggSales.map((e) => e.toJson()).toList(),
-          // Feed: encode key fields
-          'feedLogs': feedLogs.map((e) => {
-            'id': e.id, 'date': e.date.toIso8601String(),
-            'feedTypeName': e.feedTypeName, 'quantityKg': e.quantityKg,
-            'costLKR': e.costLKR, 'flockName': e.flockName,
-          }).toList(),
-          'feedTypes': feedTypes.map((e) => {
-            'id': e.id, 'name': e.name, 'brand': e.brand,
-            'pricePerKg': e.pricePerKg, 'currentStockKg': e.currentStockKg,
-          }).toList(),
-          // Health: encode key fields
-          'healthRecords': healthRecords.map((e) => {
-            'id': e.id, 'date': e.date.toIso8601String(),
-            'type': e.type.name, 'productName': e.productName,
-            'dosage': e.dosage, 'notes': e.notes,
-          }).toList(),
-          'vaccSchedule': vaccSchedule.map((e) => {
-            'id': e.id, 'vaccineName': e.vaccineName,
-            'dueDate': e.dueDate.toIso8601String(),
-            'isCompleted': e.isCompleted,
-          }).toList(),
-          'medicineStock': medicineStock.map((e) => {
-            'id': e.id, 'name': e.name, 'unit': e.unit,
-            'currentQty': e.currentQty,
-            'expiryDate': e.expiryDate?.toIso8601String(),
-          }).toList(),
-          'transactions': transactions.map((e) => {
-            'id': e.id, 'type': e.type.name,
-            'category': e.category.name, 'amount': e.amount,
-            'description': e.description, 'date': e.date.toIso8601String(),
-          }).toList(),
-        },
-      };
-
-      final jsonStr =
-          const JsonEncoder.withIndent('  ').convert(backup);
-      final bytes = utf8.encode(jsonStr);
-      final sizeKb = (bytes.length / 1024).toStringAsFixed(1);
-
-      // Share as text via share_plus
-      await Share.share(
-        jsonStr,
-        subject:
-            'Easy Poultry Manager — Farm Backup ${DateTime.now().toLocal().toString().substring(0, 10)}',
-      );
-
+      final result = await LocalBackupService.exportBackup(ref);
       if (mounted) {
-        setState(() {
-          _lastBackup = DateTime.now();
-          _lastBackupSize = '$sizeKb KB';
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Export failed: $e'),
-          backgroundColor: AppColors.error,
-          behavior: SnackBarBehavior.floating,
-        ));
+        if (result.success) {
+          setState(() {
+            _lastBackup = DateTime.now();
+            _lastBackupSize = result.sizeKb;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(result.message ?? 'Backup exported!'),
+            backgroundColor: AppColors.success,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ));
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(result.message ?? 'Export failed'),
+            backgroundColor: AppColors.error,
+            behavior: SnackBarBehavior.floating,
+          ));
+        }
       }
     } finally {
       if (mounted) setState(() => _isExporting = false);
     }
   }
 
-  void _showImportComingSoon(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-      content:
-          Text('File import will be available after Firebase integration (Phase 11)'),
-      behavior: SnackBarBehavior.floating,
-    ));
+  Future<void> _importData() async {
+    setState(() => _isImporting = true);
+    try {
+      final result = await LocalBackupService.importBackup(ref);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(result.message ?? (result.success ? 'Restored!' : 'Import failed')),
+          backgroundColor: result.success ? AppColors.success : AppColors.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ));
+      }
+    } finally {
+      if (mounted) setState(() => _isImporting = false);
+    }
   }
 
   void _showPremiumGate(BuildContext context) {
@@ -227,11 +184,16 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     );
 
     if (confirmed == true && mounted) {
+      await LocalBackupService.clearAllData(ref);
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text(
-            'Data clear will be available after offline DB integration (Phase 11)'),
+        content: Text('✅ All farm data cleared'),
         behavior: SnackBarBehavior.floating,
       ));
+      setState(() {
+        _lastBackup = null;
+        _lastBackupSize = null;
+      });
     }
   }
 }

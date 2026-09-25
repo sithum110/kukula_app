@@ -11,11 +11,12 @@ final healthRecordListProvider =
 });
 
 class HealthRecordNotifier extends StateNotifier<List<HealthRecordModel>> {
-  HealthRecordNotifier() : super(_sampleRecords());
+  HealthRecordNotifier() : super([]) {}
 
   void addRecord(HealthRecordModel record) => state = [record, ...state];
   void deleteRecord(String id) =>
       state = state.where((r) => r.id != id).toList();
+  void clearAll() => state = [];
 
   Map<String, List<HealthRecordModel>> get groupedByDate {
     final grouped = <String, List<HealthRecordModel>>{};
@@ -56,7 +57,7 @@ final vaccinationScheduleProvider =
 
 class VaccinationScheduleNotifier
     extends StateNotifier<List<VaccinationScheduleModel>> {
-  VaccinationScheduleNotifier() : super(_sampleSchedule());
+  VaccinationScheduleNotifier() : super([]) {}
 
   void addSchedule(VaccinationScheduleModel s) => state = [...state, s];
 
@@ -68,6 +69,8 @@ class VaccinationScheduleNotifier
 
   void deleteSchedule(String id) =>
       state = state.where((s) => s.id != id).toList();
+
+  void clearAll() => state = [];
 
   List<VaccinationScheduleModel> get overdue =>
       state.where((s) => s.isOverdue).toList();
@@ -93,7 +96,7 @@ final medicineStockProvider =
         (ref) => MedicineStockNotifier());
 
 class MedicineStockNotifier extends StateNotifier<List<MedicineStockModel>> {
-  MedicineStockNotifier() : super(_sampleMedicineStock());
+  MedicineStockNotifier() : super([]) {}
 
   void addItem(MedicineStockModel item) => state = [...state, item];
 
@@ -114,6 +117,8 @@ class MedicineStockNotifier extends StateNotifier<List<MedicineStockModel>> {
 
   void deleteItem(String id) =>
       state = state.where((m) => m.id != id).toList();
+
+  void clearAll() => state = [];
 
   List<MedicineStockModel> get lowStockItems =>
       state.where((m) => m.isLowStock).toList();

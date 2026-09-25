@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'package:kukula_app/core/providers/egg_providers.dart';
+import 'package:kukula_app/core/providers/finance_providers.dart';
 import 'package:kukula_app/core/theme/app_theme.dart';
 import 'package:kukula_app/features/egg_production/egg_model.dart';
+import 'package:kukula_app/features/finance/finance_model.dart';
 
 const _uuid = Uuid();
 
@@ -332,6 +334,23 @@ class _RecordSaleTabState extends ConsumerState<_RecordSaleTab> {
 
     ref.read(eggSaleListProvider.notifier).addSale(sale);
     ref.read(eggStockProvider.notifier).removeEggs(_eggCount);
+
+    // ── Auto-create finance income entry for egg sales ─────────────────────────────
+    if (_saleType == EggDispositionType.sale && _totalAmount > 0) {
+      final buyer = sale.buyerName != null ? ' — ${sale.buyerName}' : '';
+      ref.read(financeProvider.notifier).addTransaction(
+        FinanceTransactionModel(
+          id: _uuid.v4(),
+          farmId: 'farm1',
+          type: TransactionType.income,
+          category: FinanceCategory.eggSales,
+          amount: _totalAmount,
+          description: 'Egg sale: $_eggCount eggs$buyer',
+          date: DateTime.now(),
+          createdAt: DateTime.now(),
+        ),
+      );
+    }
 
     if (mounted) {
       setState(() => _isLoading = false);
