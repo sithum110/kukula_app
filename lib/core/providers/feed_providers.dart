@@ -11,7 +11,7 @@ final feedTypeListProvider =
 });
 
 class FeedTypeNotifier extends StateNotifier<List<FeedTypeModel>> {
-  FeedTypeNotifier() : super([]) {}
+  FeedTypeNotifier() : super(_sampleFeedTypes());
 
   void addFeedType(FeedTypeModel ft) => state = [...state, ft];
 
@@ -53,7 +53,7 @@ final feedLogListProvider =
 });
 
 class FeedLogNotifier extends StateNotifier<List<FeedLogModel>> {
-  FeedLogNotifier() : super([]) {}
+  FeedLogNotifier() : super(_sampleLogs());
 
   void addLog(FeedLogModel log) => state = [log, ...state];
 

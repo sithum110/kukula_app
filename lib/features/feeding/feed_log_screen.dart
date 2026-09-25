@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:kukula_app/core/providers/feed_providers.dart';
-import 'package:kukula_app/core/routing/app_router.dart';
 import 'package:kukula_app/core/theme/app_theme.dart';
 import 'package:kukula_app/features/feeding/feed_model.dart';
 
@@ -882,7 +880,7 @@ class _AddFeedEntrySheetState extends ConsumerState<_AddFeedEntrySheet> {
               const _Label('Feed Type'),
               const SizedBox(height: 8),
               DropdownButtonFormField<FeedTypeModel>(
-                value: _selectedFeed,
+                initialValue: _selectedFeed,
                 dropdownColor: AppColors.cardDark2,
                 decoration: const InputDecoration(
                     prefixIcon: Icon(Icons.grass_outlined),
