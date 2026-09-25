@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:printing/printing.dart';
 import 'package:kukula_app/core/providers/farm_providers.dart';
 import 'package:kukula_app/core/providers/egg_providers.dart';
 import 'package:kukula_app/core/providers/feed_providers.dart';
 import 'package:kukula_app/core/providers/health_providers.dart';
 import 'package:kukula_app/core/providers/finance_providers.dart';
+import 'package:kukula_app/core/routing/app_router.dart';
 import 'package:kukula_app/core/theme/app_theme.dart';
 import 'package:kukula_app/core/enums/farm_type.dart';
 import 'package:kukula_app/features/flocks/flock_model.dart';
@@ -915,7 +917,7 @@ class _PremiumUpgradePrompt extends StatelessWidget {
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () {},
+                  onPressed: () => context.push(AppRoutes.subscription),
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: AppColors.premiumGold),
                     foregroundColor: AppColors.premiumGold,
@@ -928,7 +930,7 @@ class _PremiumUpgradePrompt extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () => context.push(AppRoutes.subscription),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.premiumGold,
                     foregroundColor: Colors.black,
