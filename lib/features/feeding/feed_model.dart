@@ -68,6 +68,30 @@ class FeedTypeModel {
 
   @override
   int get hashCode => id.hashCode;
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'farmId': farmId,
+    'name': name,
+    'brand': brand,
+    'forPurpose': forPurpose,
+    'currentStockKg': currentStockKg,
+    'lowStockThresholdKg': lowStockThresholdKg,
+    'pricePerKg': pricePerKg,
+    'createdAt': createdAt.toIso8601String(),
+  };
+
+  factory FeedTypeModel.fromJson(Map<String, dynamic> j) => FeedTypeModel(
+    id: j['id'] as String,
+    farmId: j['farmId'] as String,
+    name: j['name'] as String,
+    brand: j['brand'] as String?,
+    forPurpose: j['forPurpose'] as String?,
+    currentStockKg: (j['currentStockKg'] as num).toDouble(),
+    lowStockThresholdKg: (j['lowStockThresholdKg'] as num).toDouble(),
+    pricePerKg: (j['pricePerKg'] as num?)?.toDouble(),
+    createdAt: DateTime.parse(j['createdAt'] as String),
+  );
 }
 
 
@@ -98,6 +122,34 @@ class FeedLogModel {
     required this.date,
     required this.createdAt,
   });
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'farmId': farmId,
+    'feedTypeId': feedTypeId,
+    'feedTypeName': feedTypeName,
+    'flockId': flockId,
+    'flockName': flockName,
+    'quantityKg': quantityKg,
+    'costLKR': costLKR,
+    'notes': notes,
+    'date': date.toIso8601String(),
+    'createdAt': createdAt.toIso8601String(),
+  };
+
+  factory FeedLogModel.fromJson(Map<String, dynamic> j) => FeedLogModel(
+    id: j['id'] as String,
+    farmId: j['farmId'] as String,
+    feedTypeId: j['feedTypeId'] as String,
+    feedTypeName: j['feedTypeName'] as String,
+    flockId: j['flockId'] as String?,
+    flockName: j['flockName'] as String?,
+    quantityKg: (j['quantityKg'] as num).toDouble(),
+    costLKR: (j['costLKR'] as num?)?.toDouble(),
+    notes: j['notes'] as String?,
+    date: DateTime.parse(j['date'] as String),
+    createdAt: DateTime.parse(j['createdAt'] as String),
+  );
 }
 
 /// Stock purchase / restock entry

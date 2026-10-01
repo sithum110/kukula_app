@@ -1,11 +1,11 @@
 {
-    "name": "kukula_app",
-    "short_name": "kukula_app",
+    "name": "Kukula",
+    "short_name": "Kukula",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#0D1B2A",
+    "theme_color": "#4CAF50",
+    "description": "All-in-one poultry farm management app for egg production, feeding, health, and finance tracking.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

@@ -52,7 +52,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
     final prefs = await SharedPreferences.getInstance();
     final hasOnboarded = prefs.getString('farmName') != null;
     if (mounted) {
-      context.go(hasOnboarded ? AppRoutes.dashboard : AppRoutes.farmSetup);
+      // Existing users who already completed farm setup go directly to dashboard.
+      // Brand-new users are sent to language selection first (step 1 of onboarding).
+      context.go(hasOnboarded ? AppRoutes.dashboard : AppRoutes.onboardingLanguage);
     }
   }
 

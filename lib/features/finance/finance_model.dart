@@ -4,6 +4,7 @@ enum FinanceCategory {
   // Income
   eggSales,
   meatSales,
+  livestockSale,   // meat sold from purchased livestock
   otherIncome,
   // Expense
   feedCost,
@@ -12,35 +13,40 @@ enum FinanceCategory {
   utilities,
   equipment,
   transport,
+  livestockPurchase, // buying live birds from another farmer
   otherExpense;
 
   String get label {
     switch (this) {
-      case FinanceCategory.eggSales: return 'Egg Sales';
-      case FinanceCategory.meatSales: return 'Broiler Sales';
-      case FinanceCategory.otherIncome: return 'Other Income';
-      case FinanceCategory.feedCost: return 'Feed Cost';
-      case FinanceCategory.medicineCost: return 'Medicine / Vet';
-      case FinanceCategory.labourCost: return 'Labour / Wages';
-      case FinanceCategory.utilities: return 'Utilities';
-      case FinanceCategory.equipment: return 'Equipment';
-      case FinanceCategory.transport: return 'Transport';
-      case FinanceCategory.otherExpense: return 'Other Expense';
+      case FinanceCategory.eggSales:          return 'Egg Sales';
+      case FinanceCategory.meatSales:         return 'Broiler Sales';
+      case FinanceCategory.livestockSale:     return 'Livestock Sale';
+      case FinanceCategory.otherIncome:       return 'Other Income';
+      case FinanceCategory.feedCost:          return 'Feed Cost';
+      case FinanceCategory.medicineCost:      return 'Medicine / Vet';
+      case FinanceCategory.labourCost:        return 'Labour / Wages';
+      case FinanceCategory.utilities:         return 'Utilities';
+      case FinanceCategory.equipment:         return 'Equipment';
+      case FinanceCategory.transport:         return 'Transport';
+      case FinanceCategory.livestockPurchase: return 'Livestock Purchase';
+      case FinanceCategory.otherExpense:      return 'Other Expense';
     }
   }
 
   String get emoji {
     switch (this) {
-      case FinanceCategory.eggSales: return '🥚';
-      case FinanceCategory.meatSales: return '🐔';
-      case FinanceCategory.otherIncome: return '💵';
-      case FinanceCategory.feedCost: return '🌾';
-      case FinanceCategory.medicineCost: return '💊';
-      case FinanceCategory.labourCost: return '👷';
-      case FinanceCategory.utilities: return '💡';
-      case FinanceCategory.equipment: return '🔧';
-      case FinanceCategory.transport: return '🚚';
-      case FinanceCategory.otherExpense: return '📝';
+      case FinanceCategory.eggSales:          return '🥚';
+      case FinanceCategory.meatSales:         return '🐔';
+      case FinanceCategory.livestockSale:     return '🥩';
+      case FinanceCategory.otherIncome:       return '💵';
+      case FinanceCategory.feedCost:          return '🌾';
+      case FinanceCategory.medicineCost:      return '💊';
+      case FinanceCategory.labourCost:        return '👷';
+      case FinanceCategory.utilities:         return '💡';
+      case FinanceCategory.equipment:         return '🔧';
+      case FinanceCategory.transport:         return '🚚';
+      case FinanceCategory.livestockPurchase: return '🐄';
+      case FinanceCategory.otherExpense:      return '📝';
     }
   }
 
@@ -48,6 +54,7 @@ enum FinanceCategory {
     switch (this) {
       case FinanceCategory.eggSales:
       case FinanceCategory.meatSales:
+      case FinanceCategory.livestockSale:
       case FinanceCategory.otherIncome:
         return TransactionType.income;
       default:

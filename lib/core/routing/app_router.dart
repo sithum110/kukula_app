@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kukula_app/features/auth/login/login_screen.dart';
 import 'package:kukula_app/features/auth/login/sign_up_screen.dart';
 import 'package:kukula_app/features/auth/onboarding/language_select_screen.dart';
+import 'package:kukula_app/features/auth/onboarding/onboarding_language_screen.dart';
 import 'package:kukula_app/features/auth/onboarding/welcome_screen.dart';
 import 'package:kukula_app/features/auth/onboarding/account_details_screen.dart';
 import 'package:kukula_app/features/auth/onboarding/farm_setup_screen.dart';
@@ -27,13 +28,15 @@ import 'package:kukula_app/features/users/user_list_screen.dart';
 import 'package:kukula_app/features/backup/backup_screen.dart';
 import 'package:kukula_app/features/settings/settings_screen.dart';
 import 'package:kukula_app/features/settings/subscription_screen.dart';
+import 'package:kukula_app/features/livestock_trading/livestock_trading_screen.dart';
 
 // Route name constants
 class AppRoutes {
-  static const languageSelect   = '/';
-  static const welcome          = '/welcome';
-  static const accountDetails   = '/account-details';
-  static const farmSetup        = '/farm-setup';
+  static const languageSelect      = '/';
+  static const onboardingLanguage  = '/onboarding/language'; // post-signup step
+  static const welcome             = '/welcome';
+  static const accountDetails      = '/account-details';
+  static const farmSetup           = '/farm-setup';
   static const dashboard        = '/dashboard';
   static const alertCenter      = '/alerts';
   static const flocks           = '/flocks';
@@ -55,6 +58,7 @@ class AppRoutes {
   static const login            = '/login';
   static const signUp           = '/signup';
   static const subscription     = '/subscription';
+  static const livestockTrading = '/livestock-trading';
 }
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -66,6 +70,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       // Routes that are always accessible (login, signup, onboarding)
       const authRoutes = {
         AppRoutes.languageSelect,
+        AppRoutes.onboardingLanguage,
         AppRoutes.welcome,
         AppRoutes.accountDetails,
         AppRoutes.farmSetup,
@@ -107,6 +112,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           builder: (c, s) => const SignUpScreen()),
       GoRoute(path: AppRoutes.languageSelect,
           builder: (c, s) => const LanguageSelectScreen()),
+      // Post-signup language selection (navigates to farmSetup after pick)
+      GoRoute(
+        path: AppRoutes.onboardingLanguage,
+        builder: (c, s) => const OnboardingLanguageScreen(),
+      ),
       GoRoute(path: AppRoutes.welcome,
           builder: (c, s) => const WelcomeScreen()),
       GoRoute(path: AppRoutes.accountDetails,
@@ -191,6 +201,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           builder: (c, s) => const SettingsScreen()),
       GoRoute(path: AppRoutes.subscription,
           builder: (c, s) => const SubscriptionScreen()),
+      GoRoute(path: AppRoutes.livestockTrading,
+          builder: (c, s) => const LivestockTradingScreen()),
     ],
   );
 });

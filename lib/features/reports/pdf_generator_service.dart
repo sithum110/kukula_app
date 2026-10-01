@@ -1,5 +1,6 @@
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 
 // ── PDF Color Palette ──────────────────────────────────────────────────────
 class _PdfColors {
@@ -31,7 +32,7 @@ class ReportFilter {
   String get dateRangeLabel {
     final fmt = (DateTime d) =>
         '${d.day.toString().padLeft(2, '0')} ${_month(d.month)} ${d.year}';
-    return '${fmt(startDate)} – ${fmt(endDate)}';
+    return '${fmt(startDate)} to ${fmt(endDate)}';
   }
 
   static String _month(int m) => [
@@ -127,6 +128,30 @@ class FinanceReportData {
 
 // ── PDF Generator Service ──────────────────────────────────────────────────
 class PdfGeneratorService {
+  // ── Font loader (cached, with fallback) ──────────────────────────────────
+  static pw.ThemeData? _cachedTheme;
+  static Future<pw.ThemeData> _buildTheme() async {
+    if (_cachedTheme != null) return _cachedTheme!;
+    try {
+      final regular = await PdfGoogleFonts.nunitoRegular();
+      final bold    = await PdfGoogleFonts.nunitoBold();
+      final italic  = await PdfGoogleFonts.nunitoItalic();
+      _cachedTheme  = pw.ThemeData.withFont(
+        base:   regular,
+        bold:   bold,
+        italic: italic,
+      );
+    } catch (_) {
+      // Offline fallback: built-in Helvetica (ASCII only)
+      _cachedTheme = pw.ThemeData.withFont(
+        base:   pw.Font.helvetica(),
+        bold:   pw.Font.helveticaBold(),
+        italic: pw.Font.helveticaOblique(),
+      );
+    }
+    return _cachedTheme!;
+  }
+
   // ── Common Header ────────────────────────────────────────────────────────
   static pw.Widget _header(
       String title, String farmName, String dateRange) {
@@ -187,10 +212,8 @@ class PdfGeneratorService {
         padding: const pw.EdgeInsets.all(12),
         decoration: pw.BoxDecoration(
           color: _PdfColors.grey200,
-          borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
-          border: pw.Border(
-            left: pw.BorderSide(color: c, width: 3),
-          ),
+          // NOTE: borderRadius cannot be combined with partial borders in pdf pkg
+          border: pw.Border.all(color: c, width: 1),
         ),
         child: pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -217,9 +240,7 @@ class PdfGeneratorService {
       padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: pw.BoxDecoration(
         color: _PdfColors.grey200,
-        border: pw.Border(
-          bottom: pw.BorderSide(color: _PdfColors.primary, width: 2),
-        ),
+        border: pw.Border.all(color: _PdfColors.primary, width: 1),
       ),
       child: pw.Text(
         title,
@@ -299,7 +320,8 @@ class PdfGeneratorService {
 
   // ── 🥚 EGG PRODUCTION REPORT ─────────────────────────────────────────────
   static Future<pw.Document> generateEggReport(EggReportData data) async {
-    final doc = pw.Document();
+    final theme = await _buildTheme();
+    final doc = pw.Document(theme: theme);
 
     doc.addPage(
       pw.MultiPage(
@@ -376,7 +398,8 @@ class PdfGeneratorService {
 
   // ── 🌾 FEEDING REPORT ────────────────────────────────────────────────────
   static Future<pw.Document> generateFeedReport(FeedReportData data) async {
-    final doc = pw.Document();
+    final theme = await _buildTheme();
+    final doc = pw.Document(theme: theme);
 
     doc.addPage(
       pw.MultiPage(
@@ -444,7 +467,8 @@ class PdfGeneratorService {
 
   // ── 💊 HEALTH REPORT ─────────────────────────────────────────────────────
   static Future<pw.Document> generateHealthReport(HealthReportData data) async {
-    final doc = pw.Document();
+    final theme = await _buildTheme();
+    final doc = pw.Document(theme: theme);
 
     doc.addPage(
       pw.MultiPage(
@@ -509,7 +533,8 @@ class PdfGeneratorService {
 
   // ── 💰 FINANCE P&L REPORT ─────────────────────────────────────────────────
   static Future<pw.Document> generateFinanceReport(FinanceReportData data) async {
-    final doc = pw.Document();
+    final theme = await _buildTheme();
+    final doc = pw.Document(theme: theme);
     final isProfit = data.netProfit >= 0;
     final netColor = isProfit ? _PdfColors.income : _PdfColors.expense;
 

@@ -529,29 +529,32 @@ class _SettingsTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      contentPadding:
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-      leading: Icon(icon, size: 22, color: AppColors.textSecondaryDark),
-      title: Text(label,
-          style: const TextStyle(
-              fontSize: 14, color: AppColors.textPrimaryDark)),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (value != null)
-            Text(value!,
-                style: TextStyle(
-                    fontSize: 13,
-                    color: valueColor ?? AppColors.textSecondaryDark)),
-          if (onTap != null) ...[
-            const SizedBox(width: 4),
-            const Icon(Icons.chevron_right,
-                size: 18, color: AppColors.textHintDark),
+    return Material(
+      color: Colors.transparent,
+      child: ListTile(
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+        leading: Icon(icon, size: 22, color: AppColors.textSecondaryDark),
+        title: Text(label,
+            style: const TextStyle(
+                fontSize: 14, color: AppColors.textPrimaryDark)),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (value != null)
+              Text(value!,
+                  style: TextStyle(
+                      fontSize: 13,
+                      color: valueColor ?? AppColors.textSecondaryDark)),
+            if (onTap != null) ...[
+              const SizedBox(width: 4),
+              const Icon(Icons.chevron_right,
+                  size: 18, color: AppColors.textHintDark),
+            ],
           ],
-        ],
+        ),
+        onTap: onTap,
       ),
-      onTap: onTap,
     );
   }
 }
@@ -572,16 +575,19 @@ class _SettingsSwitchTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SwitchListTile(
-      contentPadding:
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-      secondary: Icon(icon, size: 22, color: AppColors.textSecondaryDark),
-      title: Text(label,
-          style: const TextStyle(
-              fontSize: 14, color: AppColors.textPrimaryDark)),
-      value: value,
-      activeColor: AppColors.primary,
-      onChanged: onChanged,
+    return Material(
+      color: Colors.transparent,
+      child: SwitchListTile(
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+        secondary: Icon(icon, size: 22, color: AppColors.textSecondaryDark),
+        title: Text(label,
+            style: const TextStyle(
+                fontSize: 14, color: AppColors.textPrimaryDark)),
+        value: value,
+        activeColor: AppColors.primary,
+        onChanged: onChanged,
+      ),
     );
   }
 }
@@ -593,30 +599,33 @@ class _PremiumUpgradeTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      contentPadding:
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: const Text('👑', style: TextStyle(fontSize: 22)),
-      title: const Text('Upgrade to Premium',
-          style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              color: AppColors.premiumGold)),
-      subtitle: const Text('Unlock PDF reports, cloud backup & worker invites',
-          style: TextStyle(fontSize: 12, color: AppColors.textSecondaryDark)),
-      trailing: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: AppColors.premiumGold,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: const Text('Upgrade',
+    return Material(
+      color: Colors.transparent,
+      child: ListTile(
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: const Text('👑', style: TextStyle(fontSize: 22)),
+        title: const Text('Upgrade to Premium',
             style: TextStyle(
-                fontSize: 12,
-                color: Colors.black,
-                fontWeight: FontWeight.w700)),
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: AppColors.premiumGold)),
+        subtitle: const Text('Unlock PDF reports, cloud backup & worker invites',
+            style: TextStyle(fontSize: 12, color: AppColors.textSecondaryDark)),
+        trailing: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: AppColors.premiumGold,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Text('Upgrade',
+              style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.black,
+                  fontWeight: FontWeight.w700)),
+        ),
+        onTap: onTap,
       ),
-      onTap: onTap,
     );
   }
 }
@@ -634,17 +643,23 @@ class _SignOutTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppColors.error.withValues(alpha: 0.2)),
       ),
-      child: ListTile(
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        leading: const Icon(Icons.logout_rounded,
-            color: AppColors.error, size: 22),
-        title: const Text('Sign Out',
-            style: TextStyle(
-                fontSize: 14,
-                color: AppColors.error,
-                fontWeight: FontWeight.w600)),
-        onTap: onSignOut,
+      // Material is needed so the ListTile ink splash is visible above
+      // the Container's background color (Flutter requirement).
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(14),
+        child: ListTile(
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          leading: const Icon(Icons.logout_rounded,
+              color: AppColors.error, size: 22),
+          title: const Text('Sign Out',
+              style: TextStyle(
+                  fontSize: 14,
+                  color: AppColors.error,
+                  fontWeight: FontWeight.w600)),
+          onTap: onSignOut,
+        ),
       ),
     );
   }

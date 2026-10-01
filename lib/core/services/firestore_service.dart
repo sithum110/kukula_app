@@ -64,6 +64,7 @@ class FirestoreService {
   // ── Collection names (constants) ─────────────────────────────────────────
   static const flocks = 'flocks';
   static const batches = 'batches';
+  static const meatSales = 'meatSales';
   static const eggRecords = 'eggRecords';
   static const eggSales = 'eggSales';
   static const feedTypes = 'feedTypes';

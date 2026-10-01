@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:kukula_app/core/services/firestore_service.dart';
 
 // ── Auth State Stream ─────────────────────────────────────────────────────────
 /// Provides the current Firebase [User] (or null if signed out).
@@ -38,6 +39,15 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
         email: email.trim(),
         password: password,
       );
+      if (cred.user != null) {
+        // Save user profile to Firestore on first sign-in
+        await FirestoreService.instance.saveUserProfile(cred.user!.uid, {
+          'uid': cred.user!.uid,
+          'email': cred.user!.email ?? '',
+          'displayName': cred.user!.displayName ?? '',
+          'lastSignIn': DateTime.now().toIso8601String(),
+        });
+      }
       return cred.user;
     });
   }
@@ -52,6 +62,17 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
       );
       // Update display name
       await cred.user?.updateDisplayName(displayName);
+
+      if (cred.user != null) {
+        // Create user profile in Firestore
+        await FirestoreService.instance.saveUserProfile(cred.user!.uid, {
+          'uid': cred.user!.uid,
+          'email': cred.user!.email ?? '',
+          'displayName': displayName,
+          'createdAt': DateTime.now().toIso8601String(),
+          'lastSignIn': DateTime.now().toIso8601String(),
+        });
+      }
       return cred.user;
     });
   }
@@ -77,6 +98,17 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
         idToken: googleAuth.idToken,
       );
       final cred = await _auth.signInWithCredential(credential);
+
+      if (cred.user != null) {
+        // Save / update user profile in Firestore
+        await FirestoreService.instance.saveUserProfile(cred.user!.uid, {
+          'uid': cred.user!.uid,
+          'email': cred.user!.email ?? '',
+          'displayName': cred.user!.displayName ?? '',
+          'photoUrl': cred.user!.photoURL ?? '',
+          'lastSignIn': DateTime.now().toIso8601String(),
+        });
+      }
       return cred.user;
     });
   }

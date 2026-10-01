@@ -1,41 +1,86 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
+import 'package:kukula_app/core/providers/auth_provider.dart';
+import 'package:kukula_app/core/services/firestore_service.dart';
 import 'package:kukula_app/features/feeding/feed_model.dart';
 
-const _uuid = Uuid();
-
-// ── Feed Types (stock registry) ───────────────────────────────────────────
+// ── Feed Types (Firestore) ────────────────────────────────────────────────
 final feedTypeListProvider =
     StateNotifierProvider<FeedTypeNotifier, List<FeedTypeModel>>((ref) {
-  return FeedTypeNotifier();
+  return FeedTypeNotifier(ref);
 });
 
 class FeedTypeNotifier extends StateNotifier<List<FeedTypeModel>> {
-  FeedTypeNotifier() : super(_sampleFeedTypes());
+  final Ref _ref;
+  FeedTypeNotifier(this._ref) : super([]) {
+    _load();
+  }
 
-  void addFeedType(FeedTypeModel ft) => state = [...state, ft];
+  String get _uid => _ref.read(currentUidProvider);
 
-  void updateFeedType(FeedTypeModel updated) =>
-      state = state.map((f) => f.id == updated.id ? updated : f).toList();
+  Future<void> _load() async {
+    final uid = _uid;
+    if (uid.isEmpty) return;
+    try {
+      final docs = await FirestoreService.instance
+          .getAll(uid, FirestoreService.feedTypes);
+      state = docs.map(FeedTypeModel.fromJson).toList();
+    } catch (_) {}
+  }
 
-  void deleteFeedType(String id) =>
-      state = state.where((f) => f.id != id).toList();
+  Future<void> _sync(FeedTypeModel ft) async {
+    final uid = _uid;
+    if (uid.isEmpty) return;
+    try {
+      await FirestoreService.instance
+          .set(uid, FirestoreService.feedTypes, ft.id, ft.toJson());
+    } catch (_) {}
+  }
+
+  Future<void> _delete(String id) async {
+    final uid = _uid;
+    if (uid.isEmpty) return;
+    try {
+      await FirestoreService.instance
+          .delete(uid, FirestoreService.feedTypes, id);
+    } catch (_) {}
+  }
+
+  void addFeedType(FeedTypeModel ft) {
+    state = [...state, ft];
+    _sync(ft);
+  }
+
+  void updateFeedType(FeedTypeModel updated) {
+    state = state.map((f) => f.id == updated.id ? updated : f).toList();
+    _sync(updated);
+  }
+
+  void deleteFeedType(String id) {
+    state = state.where((f) => f.id != id).toList();
+    _delete(id);
+  }
 
   /// Deduct from stock when a feed log is added
   void deductStock(String feedTypeId, double kg) {
+    FeedTypeModel? updated;
     state = state.map((f) {
       if (f.id != feedTypeId) return f;
       final newStock = (f.currentStockKg - kg).clamp(0.0, double.infinity);
-      return f.copyWith(currentStockKg: newStock);
+      updated = f.copyWith(currentStockKg: newStock);
+      return updated!;
     }).toList();
+    if (updated != null) _sync(updated!);
   }
 
   /// Add to stock when restocked
   void addStock(String feedTypeId, double kg) {
+    FeedTypeModel? updated;
     state = state.map((f) {
       if (f.id != feedTypeId) return f;
-      return f.copyWith(currentStockKg: f.currentStockKg + kg);
+      updated = f.copyWith(currentStockKg: f.currentStockKg + kg);
+      return updated!;
     }).toList();
+    if (updated != null) _sync(updated!);
   }
 
   List<FeedTypeModel> get lowStockItems =>
@@ -44,20 +89,62 @@ class FeedTypeNotifier extends StateNotifier<List<FeedTypeModel>> {
   int get lowStockCount => lowStockItems.length;
 
   void clearAll() => state = [];
+
+  Future<void> reload() => _load();
 }
 
-// ── Feed Log Provider ─────────────────────────────────────────────────────
+// ── Feed Log Provider (Firestore) ─────────────────────────────────────────
 final feedLogListProvider =
     StateNotifierProvider<FeedLogNotifier, List<FeedLogModel>>((ref) {
-  return FeedLogNotifier();
+  return FeedLogNotifier(ref);
 });
 
 class FeedLogNotifier extends StateNotifier<List<FeedLogModel>> {
-  FeedLogNotifier() : super(_sampleLogs());
+  final Ref _ref;
+  FeedLogNotifier(this._ref) : super([]) {
+    _load();
+  }
 
-  void addLog(FeedLogModel log) => state = [log, ...state];
+  String get _uid => _ref.read(currentUidProvider);
 
-  void deleteLog(String id) => state = state.where((l) => l.id != id).toList();
+  Future<void> _load() async {
+    final uid = _uid;
+    if (uid.isEmpty) return;
+    try {
+      final docs = await FirestoreService.instance
+          .getAll(uid, FirestoreService.feedLogs);
+      state = docs.map(FeedLogModel.fromJson).toList()
+        ..sort((a, b) => b.date.compareTo(a.date));
+    } catch (_) {}
+  }
+
+  Future<void> _sync(FeedLogModel log) async {
+    final uid = _uid;
+    if (uid.isEmpty) return;
+    try {
+      await FirestoreService.instance
+          .set(uid, FirestoreService.feedLogs, log.id, log.toJson());
+    } catch (_) {}
+  }
+
+  Future<void> _delete(String id) async {
+    final uid = _uid;
+    if (uid.isEmpty) return;
+    try {
+      await FirestoreService.instance
+          .delete(uid, FirestoreService.feedLogs, id);
+    } catch (_) {}
+  }
+
+  void addLog(FeedLogModel log) {
+    state = [log, ...state];
+    _sync(log);
+  }
+
+  void deleteLog(String id) {
+    state = state.where((l) => l.id != id).toList();
+    _delete(id);
+  }
 
   void clearAll() => state = [];
 
@@ -99,6 +186,8 @@ class FeedLogNotifier extends StateNotifier<List<FeedLogModel>> {
 
   String _month(int m) => ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][m];
+
+  Future<void> reload() => _load();
 }
 
 // ── Stock Purchases Provider ──────────────────────────────────────────────
@@ -113,77 +202,4 @@ class FeedPurchaseNotifier extends StateNotifier<List<FeedStockPurchaseModel>> {
   void addPurchase(FeedStockPurchaseModel p) => state = [p, ...state];
 
   void clearAll() => state = [];
-}
-
-// ── Sample Data ───────────────────────────────────────────────────────────
-List<FeedTypeModel> _sampleFeedTypes() => [
-  FeedTypeModel(
-    id: 'ft1', farmId: 'farm1',
-    name: 'Layer Pellets', brand: 'CIC Feeds',
-    forPurpose: 'layer', currentStockKg: 42.0,
-    lowStockThresholdKg: 50.0, pricePerKg: 95.0,
-    createdAt: DateTime.now().subtract(const Duration(days: 90)),
-  ),
-  FeedTypeModel(
-    id: 'ft2', farmId: 'farm1',
-    name: 'Broiler Starter', brand: 'Prima Feeds',
-    forPurpose: 'broiler', currentStockKg: 180.0,
-    lowStockThresholdKg: 100.0, pricePerKg: 105.0,
-    createdAt: DateTime.now().subtract(const Duration(days: 50)),
-  ),
-  FeedTypeModel(
-    id: 'ft3', farmId: 'farm1',
-    name: 'Broiler Finisher', brand: 'Prima Feeds',
-    forPurpose: 'broiler', currentStockKg: 25.0,
-    lowStockThresholdKg: 80.0, pricePerKg: 112.0,
-    createdAt: DateTime.now().subtract(const Duration(days: 30)),
-  ),
-  FeedTypeModel(
-    id: 'ft4', farmId: 'farm1',
-    name: 'Crushed Maize', brand: null,
-    forPurpose: 'all', currentStockKg: 320.0,
-    lowStockThresholdKg: 100.0, pricePerKg: 75.0,
-    createdAt: DateTime.now().subtract(const Duration(days: 60)),
-  ),
-];
-
-List<FeedLogModel> _sampleLogs() {
-  final now = DateTime.now();
-  return [
-    FeedLogModel(
-      id: _uuid.v4(), farmId: 'farm1',
-      feedTypeId: 'ft1', feedTypeName: 'Layer Pellets',
-      flockId: null, flockName: 'All Layer Flocks',
-      quantityKg: 25.0, costLKR: 2375.0,
-      date: now, createdAt: now,
-    ),
-    FeedLogModel(
-      id: _uuid.v4(), farmId: 'farm1',
-      feedTypeId: 'ft2', feedTypeName: 'Broiler Starter',
-      flockId: null, flockName: 'Batch Jan 2026',
-      quantityKg: 40.0, costLKR: 4200.0,
-      date: now, createdAt: now,
-    ),
-    FeedLogModel(
-      id: _uuid.v4(), farmId: 'farm1',
-      feedTypeId: 'ft1', feedTypeName: 'Layer Pellets',
-      flockId: null, flockName: 'All Layer Flocks',
-      quantityKg: 25.0, costLKR: 2375.0,
-      date: now.subtract(const Duration(days: 1)), createdAt: now,
-    ),
-    FeedLogModel(
-      id: _uuid.v4(), farmId: 'farm1',
-      feedTypeId: 'ft3', feedTypeName: 'Broiler Finisher',
-      flockId: null, flockName: 'Batch Feb 2026',
-      quantityKg: 30.0, costLKR: 3360.0,
-      date: now.subtract(const Duration(days: 1)), createdAt: now,
-    ),
-    FeedLogModel(
-      id: _uuid.v4(), farmId: 'farm1',
-      feedTypeId: 'ft4', feedTypeName: 'Crushed Maize',
-      flockId: null, flockName: 'All Flocks',
-      quantityKg: 50.0, costLKR: 3750.0,
-      date: now.subtract(const Duration(days: 2)), createdAt: now,
-    ),
-  ];
 }

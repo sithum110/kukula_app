@@ -58,6 +58,41 @@ class HealthRecordModel {
     this.administeredBy,
     required this.createdAt,
   });
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'farmId': farmId,
+    'type': type.name,
+    'flockId': flockId,
+    'flockName': flockName,
+    'productName': productName,
+    'dosage': dosage,
+    'quantityUsed': quantityUsed,
+    'medicineStockId': medicineStockId,
+    'notes': notes,
+    'date': date.toIso8601String(),
+    'nextDueDate': nextDueDate?.toIso8601String(),
+    'administeredBy': administeredBy,
+    'createdAt': createdAt.toIso8601String(),
+  };
+
+  factory HealthRecordModel.fromJson(Map<String, dynamic> j) => HealthRecordModel(
+    id: j['id'] as String,
+    farmId: j['farmId'] as String,
+    type: HealthRecordType.values.firstWhere((e) => e.name == j['type'],
+        orElse: () => HealthRecordType.observation),
+    flockId: j['flockId'] as String?,
+    flockName: j['flockName'] as String?,
+    productName: j['productName'] as String,
+    dosage: j['dosage'] as String?,
+    quantityUsed: (j['quantityUsed'] as num?)?.toDouble(),
+    medicineStockId: j['medicineStockId'] as String?,
+    notes: j['notes'] as String?,
+    date: DateTime.parse(j['date'] as String),
+    nextDueDate: j['nextDueDate'] != null ? DateTime.parse(j['nextDueDate'] as String) : null,
+    administeredBy: j['administeredBy'] as String?,
+    createdAt: DateTime.parse(j['createdAt'] as String),
+  );
 }
 
 /// Upcoming vaccination schedule entry
@@ -95,6 +130,29 @@ class VaccinationScheduleModel {
         vaccineName: vaccineName, dueDate: dueDate,
         isCompleted: isCompleted ?? this.isCompleted,
         notes: notes,
+      );
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'farmId': farmId,
+    'flockId': flockId,
+    'flockName': flockName,
+    'vaccineName': vaccineName,
+    'dueDate': dueDate.toIso8601String(),
+    'isCompleted': isCompleted,
+    'notes': notes,
+  };
+
+  factory VaccinationScheduleModel.fromJson(Map<String, dynamic> j) =>
+      VaccinationScheduleModel(
+        id: j['id'] as String,
+        farmId: j['farmId'] as String,
+        flockId: j['flockId'] as String?,
+        flockName: j['flockName'] as String?,
+        vaccineName: j['vaccineName'] as String,
+        dueDate: DateTime.parse(j['dueDate'] as String),
+        isCompleted: j['isCompleted'] as bool? ?? false,
+        notes: j['notes'] as String?,
       );
 }
 
@@ -144,5 +202,34 @@ class MedicineStockModel {
     lowStockThreshold: lowStockThreshold, expiryDate: expiryDate,
     pricePerUnit: pricePerUnit, manufacturer: manufacturer,
     createdAt: createdAt,
+  );
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'farmId': farmId,
+    'name': name,
+    'stockType': stockType.name,
+    'unit': unit,
+    'currentQty': currentQty,
+    'lowStockThreshold': lowStockThreshold,
+    'expiryDate': expiryDate?.toIso8601String(),
+    'pricePerUnit': pricePerUnit,
+    'manufacturer': manufacturer,
+    'createdAt': createdAt.toIso8601String(),
+  };
+
+  factory MedicineStockModel.fromJson(Map<String, dynamic> j) => MedicineStockModel(
+    id: j['id'] as String,
+    farmId: j['farmId'] as String,
+    name: j['name'] as String,
+    stockType: MedicineStockType.values.firstWhere((e) => e.name == j['stockType'],
+        orElse: () => MedicineStockType.medicine),
+    unit: j['unit'] as String?,
+    currentQty: (j['currentQty'] as num).toDouble(),
+    lowStockThreshold: (j['lowStockThreshold'] as num).toDouble(),
+    expiryDate: j['expiryDate'] != null ? DateTime.parse(j['expiryDate'] as String) : null,
+    pricePerUnit: (j['pricePerUnit'] as num?)?.toDouble(),
+    manufacturer: j['manufacturer'] as String?,
+    createdAt: DateTime.parse(j['createdAt'] as String),
   );
 }

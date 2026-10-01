@@ -4,12 +4,17 @@ import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 import 'package:kukula_app/core/providers/batch_providers.dart';
 import 'package:kukula_app/core/providers/finance_providers.dart';
+import 'package:kukula_app/core/providers/livestock_trading_providers.dart';
 import 'package:kukula_app/core/theme/app_theme.dart';
 import 'package:kukula_app/features/finance/finance_model.dart';
+import 'package:kukula_app/features/livestock_trading/livestock_trading_model.dart';
 import 'package:kukula_app/features/meat_batches/batch_model.dart';
 import 'package:kukula_app/l10n/app_localizations.dart';
 
 const _uuid = Uuid();
+
+/// Source of the birds being sold
+enum _SaleSource { ownBatch, livestock }
 
 class MeatSalesScreen extends ConsumerStatefulWidget {
   const MeatSalesScreen({super.key});
@@ -84,6 +89,8 @@ class _AddSaleTabState extends ConsumerState<_AddSaleTab> {
   final _formKey = GlobalKey<FormState>();
   BatchModel? _selectedBatch;
   BroilerSaleType _saleType = BroilerSaleType.liveBird;
+  _SaleSource _saleSource = _SaleSource.ownBatch; // NEW: own batch vs livestock
+  String? _selectedSupplierName; // used when saleSource == livestock
   final _buyerCtrl = TextEditingController();
   final _quantityCtrl = TextEditingController();   // birds count (both)
   final _weightCtrl = TextEditingController();     // live weight kg (live bird)
@@ -108,6 +115,12 @@ class _AddSaleTabState extends ConsumerState<_AddSaleTab> {
   }
 
   double get _total {
+    if (_saleSource == _SaleSource.livestock) {
+      // Livestock: always weight × price/kg
+      final kg = double.tryParse(_weightCtrl.text) ?? 0;
+      final p  = double.tryParse(_priceCtrl.text) ?? 0;
+      return kg * p;
+    }
     if (_saleType == BroilerSaleType.liveBird) {
       final kg = double.tryParse(_weightCtrl.text) ?? 0;
       final p = double.tryParse(_priceCtrl.text) ?? 0;
@@ -136,7 +149,46 @@ class _AddSaleTabState extends ConsumerState<_AddSaleTab> {
       child: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          // ── Sale Type Subsection ──────────────────────────────────────
+          // ── Sale Source Selector (Own Batch vs Livestock Purchase) ──────
+          const Text('Bird Source',
+              style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textSecondaryDark)),
+          const SizedBox(height: 10),
+          Row(children: [
+            Expanded(child: _SourceCard(
+              icon: Icons.set_meal_outlined,
+              emoji: '🐔',
+              label: 'Own Batch',
+              description: 'Birds from your own growing batch',
+              selected: _saleSource == _SaleSource.ownBatch,
+              selectedColor: AppColors.meatAccent,
+              onTap: () => setState(() {
+                _saleSource = _SaleSource.ownBatch;
+                _selectedSupplierName = null;
+                _priceCtrl.clear(); _quantityCtrl.clear(); _weightCtrl.clear();
+              }),
+            )),
+            const SizedBox(width: 10),
+            Expanded(child: _SourceCard(
+              icon: Icons.storefront_outlined,
+              emoji: '🛒',
+              label: 'Livestock',
+              description: 'Birds bought from another farmer',
+              selected: _saleSource == _SaleSource.livestock,
+              selectedColor: const Color(0xFFFF8C00),
+              onTap: () => setState(() {
+                _saleSource = _SaleSource.livestock;
+                _selectedBatch = null;
+                _priceCtrl.clear(); _quantityCtrl.clear(); _weightCtrl.clear();
+              }),
+            )),
+          ]),
+          const SizedBox(height: 20),
+
+          // ── Sale Type Subsection (only for own batch) ─────────────────
+          if (_saleSource == _SaleSource.ownBatch) ...[
           const Text('Sale Type',
               style: TextStyle(
                   fontSize: 13,
@@ -167,8 +219,10 @@ class _AddSaleTabState extends ConsumerState<_AddSaleTab> {
             )),
           ]),
           const SizedBox(height: 20),
+          ],
 
-          // ── Batch selector ────────────────────────────────────────────
+          // ── Batch selector (own batch) OR Supplier selector (livestock) ──
+          if (_saleSource == _SaleSource.ownBatch) ...[
           _Label('Select Batch'),
           const SizedBox(height: 8),
           DropdownButtonFormField<BatchModel>(
@@ -190,6 +244,38 @@ class _AddSaleTabState extends ConsumerState<_AddSaleTab> {
             onChanged: (b) => setState(() => _selectedBatch = b),
             validator: (v) => v == null ? 'Please select a batch' : null,
           ),
+          ] else ...[
+          // ── Livestock: select supplier ──────────────────────────────────
+          _Label('Select Supplier (Livestock Purchase)'),
+          const SizedBox(height: 8),
+          Consumer(builder: (ctx, ref, _) {
+            final suppliers = ref.watch(livestockPurchaseProvider
+                .select((list) => list.map((p) => p.supplierName).toSet().toList()));
+            return DropdownButtonFormField<String>(
+              value: _selectedSupplierName,
+              dropdownColor: AppColors.cardDark2,
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.storefront_outlined),
+                hintText: 'Choose a supplier',
+              ),
+              items: suppliers.isEmpty
+                  ? [const DropdownMenuItem(value: null,
+                      child: Text('No livestock purchases yet',
+                          style: TextStyle(color: AppColors.textHintDark)))]
+                  : suppliers
+                      .map((name) => DropdownMenuItem(
+                            value: name,
+                            child: Text('🛒 $name',
+                                style: const TextStyle(
+                                    color: AppColors.textPrimaryDark)),
+                          ))
+                      .toList(),
+              onChanged: (v) => setState(() => _selectedSupplierName = v),
+              validator: (v) =>
+                  v == null ? 'Please select a supplier' : null,
+            );
+          }),
+          ],
           const SizedBox(height: 16),
 
           // ── Buyer ─────────────────────────────────────────────────────
@@ -205,8 +291,57 @@ class _AddSaleTabState extends ConsumerState<_AddSaleTab> {
           ),
           const SizedBox(height: 16),
 
-          // ── Dynamic fields by sale type ───────────────────────────────
-          if (_saleType == BroilerSaleType.liveBird) ...[
+          // ── Dynamic fields ────────────────────────────────────────────
+
+          // LIVESTOCK SOURCE: kg + price/kg only (no bird count)
+          if (_saleSource == _SaleSource.livestock) ...[
+            Row(children: [
+              Expanded(
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  _Label('Weight Sold (kg) *'),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: _weightCtrl,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: const InputDecoration(
+                      hintText: '50.0',
+                      suffixText: 'kg',
+                      prefixIcon: Icon(Icons.scale_outlined),
+                    ),
+                    onChanged: (_) => setState(() {}),
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) return 'Required';
+                      if (double.tryParse(v.trim()) == null) return 'Invalid';
+                      return null;
+                    },
+                  ),
+                ]),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  _Label('Price / kg (LKR) *'),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: _priceCtrl,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: const InputDecoration(
+                      hintText: '800',
+                      prefixText: 'LKR ',
+                    ),
+                    onChanged: (_) => setState(() {}),
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) return 'Required';
+                      if (double.tryParse(v.trim()) == null) return 'Invalid';
+                      return null;
+                    },
+                  ),
+                ]),
+              ),
+            ]),
+
+          // OWN BATCH SOURCE: original bird quantity logic
+          ] else if (_saleType == BroilerSaleType.liveBird) ...[
             // LIVE BIRD: birds + live weight + price/kg
             _Label('Number of Birds'),
             const SizedBox(height: 8),
@@ -354,9 +489,11 @@ class _AddSaleTabState extends ConsumerState<_AddSaleTab> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    _saleType == BroilerSaleType.liveBird
+                    _saleSource == _SaleSource.livestock
                         ? '${_weightCtrl.text} kg × LKR ${_priceCtrl.text}/kg'
-                        : '${_quantityCtrl.text} birds × LKR ${_priceCtrl.text}',
+                        : _saleType == BroilerSaleType.liveBird
+                            ? '${_weightCtrl.text} kg × LKR ${_priceCtrl.text}/kg'
+                            : '${_quantityCtrl.text} birds × LKR ${_priceCtrl.text}',
                     style: const TextStyle(
                         color: AppColors.textSecondaryDark, fontSize: 13)),
                   Text(
@@ -398,9 +535,63 @@ class _AddSaleTabState extends ConsumerState<_AddSaleTab> {
   }
 
   Future<void> _save() async {
-    if (!_formKey.currentState!.validate() || _selectedBatch == null) return;
+    if (!_formKey.currentState!.validate()) return;
+    // Validate source selection
+    if (_saleSource == _SaleSource.ownBatch && _selectedBatch == null) return;
+    if (_saleSource == _SaleSource.livestock && _selectedSupplierName == null) return;
     setState(() => _isLoading = true);
 
+    // ── Livestock sale path ─────────────────────────────────────────────────
+    if (_saleSource == _SaleSource.livestock) {
+      final weightKg   = double.tryParse(_weightCtrl.text) ?? 0;
+      final pricePerKg = double.tryParse(_priceCtrl.text) ?? 0;
+      final qty        = int.tryParse(_quantityCtrl.text) ?? 0;
+      final total      = weightKg * pricePerKg;
+
+      // Auto-log as INCOME — Livestock Sale
+      ref.read(financeProvider.notifier).addTransaction(
+        FinanceTransactionModel(
+          id: _uuid.v4(),
+          farmId: 'farm1',
+          type: TransactionType.income,
+          category: FinanceCategory.livestockSale,
+          amount: total,
+          description:
+              'Livestock meat sale: $qty birds, ${weightKg.toStringAsFixed(1)} kg '
+              '@ Rs.${pricePerKg.toStringAsFixed(0)}/kg '
+              '— Supplier: $_selectedSupplierName'
+              '${_buyerCtrl.text.trim().isNotEmpty ? ", Buyer: ${_buyerCtrl.text.trim()}" : ""}',
+          reference: _selectedSupplierName,
+          date: _date,
+          createdAt: DateTime.now(),
+        ),
+      );
+
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                '✅ Livestock sale: $qty birds · ${weightKg.toStringAsFixed(1)} kg '
+                '— LKR ${total.toStringAsFixed(0)} logged as income'),
+            backgroundColor: const Color(0xFFFF8C00),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        _formKey.currentState!.reset();
+        setState(() {
+          _selectedSupplierName = null;
+          _buyerCtrl.clear();
+          _quantityCtrl.clear();
+          _weightCtrl.clear();
+          _priceCtrl.clear();
+          _notesCtrl.clear();
+        });
+      }
+      return;
+    }
+
+    // ── Own-batch sale path (original logic) ────────────────────────────────
     final qty = int.parse(_quantityCtrl.text);
 
     final MeatSaleModel sale;
@@ -478,6 +669,59 @@ class _AddSaleTabState extends ConsumerState<_AddSaleTab> {
         _notesCtrl.clear();
       });
     }
+  }
+}
+
+// ── Source Card (Own Batch vs Livestock) ────────────────────────────────────
+class _SourceCard extends StatelessWidget {
+  final IconData icon;
+  final String emoji, label, description;
+  final bool selected;
+  final Color selectedColor;
+  final VoidCallback onTap;
+  const _SourceCard({
+    required this.icon,
+    required this.emoji,
+    required this.label,
+    required this.description,
+    required this.selected,
+    required this.selectedColor,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: selected
+              ? selectedColor.withValues(alpha: 0.15)
+              : AppColors.cardDark2,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: selected ? selectedColor : AppColors.borderDark,
+            width: selected ? 2 : 1,
+          ),
+        ),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(emoji, style: const TextStyle(fontSize: 26)),
+          const SizedBox(height: 6),
+          Text(label,
+              style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: selected ? selectedColor : AppColors.textPrimaryDark)),
+          const SizedBox(height: 3),
+          Text(description,
+              style: const TextStyle(fontSize: 10, color: AppColors.textHintDark),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis),
+        ]),
+      ),
+    );
   }
 }
 

@@ -11,6 +11,13 @@ import 'package:kukula_app/core/providers/farm_providers.dart';
 import 'package:kukula_app/core/providers/feed_providers.dart';
 import 'package:kukula_app/core/providers/finance_providers.dart';
 import 'package:kukula_app/core/providers/health_providers.dart';
+import 'package:kukula_app/features/egg_production/egg_model.dart';
+import 'package:kukula_app/features/feeding/feed_model.dart';
+import 'package:kukula_app/features/finance/finance_model.dart';
+import 'package:kukula_app/features/flocks/flock_model.dart';
+import 'package:kukula_app/features/health/health_model.dart';
+import 'package:kukula_app/features/meat_batches/batch_model.dart';
+
 
 // ── Backup Result ──────────────────────────────────────────────────────────
 class BackupResult {
@@ -29,7 +36,7 @@ class BackupResult {
 
 // ── Local Backup Service ───────────────────────────────────────────────────
 class LocalBackupService {
-  static const _backupVersion = '1.1';
+  static const _backupVersion = '1.2';
   static const _appName = 'Easy Poultry Manager';
 
   // ── Export (Create Backup) ───────────────────────────────────────────────
@@ -120,7 +127,7 @@ class LocalBackupService {
         );
       }
 
-      _restoreFromData(ref, data);
+      await _restoreFromData(ref, data);
 
       return BackupResult(
         success: true,
@@ -214,6 +221,22 @@ class LocalBackupService {
     ref.read(financeProvider.notifier).clearAll();
   }
 
+  // ── Reload all providers from Firestore (call after sign-in) ──────────────
+  static Future<void> reloadAllFromFirestore(WidgetRef ref) async {
+    await Future.wait([
+      ref.read(flockListProvider.notifier).reload(),
+      ref.read(batchListProvider.notifier).reload(),
+      ref.read(eggRecordListProvider.notifier).reload(),
+      ref.read(eggSaleListProvider.notifier).reload(),
+      ref.read(feedTypeListProvider.notifier).reload(),
+      ref.read(feedLogListProvider.notifier).reload(),
+      ref.read(healthRecordListProvider.notifier).reload(),
+      ref.read(vaccinationScheduleProvider.notifier).reload(),
+      ref.read(medicineStockProvider.notifier).reload(),
+      ref.read(financeProvider.notifier).reload(),
+    ]);
+  }
+
   // ── Private: Build JSON backup string ─────────────────────────────────────
   static String _buildBackupJson(WidgetRef ref) {
     final flocks = ref.read(flockListProvider);
@@ -242,53 +265,12 @@ class LocalBackupService {
         'batches': batches.map((e) => e.toJson()).toList(),
         'eggCollections': eggCollections.map((e) => e.toJson()).toList(),
         'eggSales': eggSales.map((e) => e.toJson()).toList(),
-        'feedLogs': feedLogs.map((e) => {
-          'id': e.id,
-          'date': e.date.toIso8601String(),
-          'feedTypeName': e.feedTypeName,
-          'quantityKg': e.quantityKg,
-          'costLKR': e.costLKR,
-          'flockName': e.flockName,
-        }).toList(),
-        'feedTypes': feedTypes.map((e) => {
-          'id': e.id,
-          'name': e.name,
-          'brand': e.brand,
-          'pricePerKg': e.pricePerKg,
-          'currentStockKg': e.currentStockKg, // live from notifier state
-          'lowStockThresholdKg': e.lowStockThresholdKg,
-        }).toList(),
-        'healthRecords': healthRecords.map((e) => {
-          'id': e.id,
-          'date': e.date.toIso8601String(),
-          'type': e.type.name,
-          'productName': e.productName,
-          'dosage': e.dosage,
-          'notes': e.notes,
-        }).toList(),
-        'vaccSchedule': vaccSchedule.map((e) => {
-          'id': e.id,
-          'vaccineName': e.vaccineName,
-          'dueDate': e.dueDate.toIso8601String(),
-          'isCompleted': e.isCompleted,
-        }).toList(),
-        'medicineStock': medicineStock.map((e) => {
-          'id': e.id,
-          'name': e.name,
-          'unit': e.unit,
-          'stockType': e.stockType.name,
-          'currentQty': e.currentQty,
-          'lowStockThreshold': e.lowStockThreshold,
-          'expiryDate': e.expiryDate?.toIso8601String(),
-        }).toList(),
-        'transactions': transactions.map((e) => {
-          'id': e.id,
-          'type': e.type.name,
-          'category': e.category.name,
-          'amount': e.amount,
-          'description': e.description,
-          'date': e.date.toIso8601String(),
-        }).toList(),
+        'feedLogs': feedLogs.map((e) => e.toJson()).toList(),
+        'feedTypes': feedTypes.map((e) => e.toJson()).toList(),
+        'healthRecords': healthRecords.map((e) => e.toJson()).toList(),
+        'vaccSchedule': vaccSchedule.map((e) => e.toJson()).toList(),
+        'medicineStock': medicineStock.map((e) => e.toJson()).toList(),
+        'transactions': transactions.map((e) => e.toJson()).toList(),
       },
     };
 
@@ -296,15 +278,102 @@ class LocalBackupService {
   }
 
   // ── Private: Restore data into providers ──────────────────────────────────
-  static void _restoreFromData(WidgetRef ref, Map<String, dynamic> data) {
-    // NOTE: In full Firebase implementation, this would write to Firestore.
-    // For now, we restore into in-memory Riverpod providers.
-    //
-    // Full restore of all complex models requires matching constructors —
-    // this is the lightweight "merge" version that restores what we can parse.
-    // A full restore (replacing all data) would call clearAll() first then
-    // repopulate; here we just show success since in-memory state is volatile.
-    debugPrint('[LocalBackupService] Restore: found ${data.keys.length} data keys.');
-    debugPrint('[LocalBackupService] Full in-memory restore requires app restart.');
+  static Future<void> _restoreFromData(WidgetRef ref, Map<String, dynamic> data) async {
+    debugPrint('[LocalBackupService] Restoring ${data.keys.length} data collections...');
+
+    // Clear all first
+    await clearAllData(ref);
+
+    // ── Flocks
+    final flocksRaw = data['flocks'] as List<dynamic>? ?? [];
+    for (final raw in flocksRaw) {
+      try {
+        ref.read(flockListProvider.notifier).addFlock(
+            FlockModel.fromJson(raw as Map<String, dynamic>));
+      } catch (_) {}
+    }
+
+    // ── Batches
+    final batchesRaw = data['batches'] as List<dynamic>? ?? [];
+    for (final raw in batchesRaw) {
+      try {
+        ref.read(batchListProvider.notifier).addBatch(
+            BatchModel.fromJson(raw as Map<String, dynamic>));
+      } catch (_) {}
+    }
+
+    // ── Egg Collections
+    final eggColRaw = data['eggCollections'] as List<dynamic>? ?? [];
+    for (final raw in eggColRaw) {
+      try {
+        ref.read(eggRecordListProvider.notifier).addRecord(
+            EggRecordModel.fromJson(raw as Map<String, dynamic>));
+      } catch (_) {}
+    }
+
+    // ── Egg Sales
+    final eggSalesRaw = data['eggSales'] as List<dynamic>? ?? [];
+    for (final raw in eggSalesRaw) {
+      try {
+        ref.read(eggSaleListProvider.notifier).addSale(
+            EggSaleModel.fromJson(raw as Map<String, dynamic>));
+      } catch (_) {}
+    }
+
+    // ── Feed Types
+    final feedTypesRaw = data['feedTypes'] as List<dynamic>? ?? [];
+    for (final raw in feedTypesRaw) {
+      try {
+        ref.read(feedTypeListProvider.notifier).addFeedType(
+            FeedTypeModel.fromJson(raw as Map<String, dynamic>));
+      } catch (_) {}
+    }
+
+    // ── Feed Logs
+    final feedLogsRaw = data['feedLogs'] as List<dynamic>? ?? [];
+    for (final raw in feedLogsRaw) {
+      try {
+        ref.read(feedLogListProvider.notifier).addLog(
+            FeedLogModel.fromJson(raw as Map<String, dynamic>));
+      } catch (_) {}
+    }
+
+    // ── Health Records
+    final healthRaw = data['healthRecords'] as List<dynamic>? ?? [];
+    for (final raw in healthRaw) {
+      try {
+        ref.read(healthRecordListProvider.notifier).addRecord(
+            HealthRecordModel.fromJson(raw as Map<String, dynamic>));
+      } catch (_) {}
+    }
+
+    // ── Vaccination Schedule
+    final vaccRaw = data['vaccSchedule'] as List<dynamic>? ?? [];
+    for (final raw in vaccRaw) {
+      try {
+        ref.read(vaccinationScheduleProvider.notifier).addSchedule(
+            VaccinationScheduleModel.fromJson(raw as Map<String, dynamic>));
+      } catch (_) {}
+    }
+
+    // ── Medicine Stock
+    final medRaw = data['medicineStock'] as List<dynamic>? ?? [];
+    for (final raw in medRaw) {
+      try {
+        ref.read(medicineStockProvider.notifier).addItem(
+            MedicineStockModel.fromJson(raw as Map<String, dynamic>));
+      } catch (_) {}
+    }
+
+    // ── Finance Transactions
+    final financeRaw = data['transactions'] as List<dynamic>? ?? [];
+    for (final raw in financeRaw) {
+      try {
+        ref.read(financeProvider.notifier).addTransaction(
+            FinanceTransactionModel.fromJson(raw as Map<String, dynamic>));
+      } catch (_) {}
+    }
+
+    debugPrint('[LocalBackupService] Restore complete. All data synced to Firestore.');
   }
 }

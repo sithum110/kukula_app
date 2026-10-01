@@ -1,25 +1,59 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
+import 'package:kukula_app/core/providers/auth_provider.dart';
+import 'package:kukula_app/core/services/firestore_service.dart';
 import 'package:kukula_app/features/egg_production/egg_model.dart';
 
-const _uuid = Uuid();
-
-// ── Egg Collection Provider ───────────────────────────────────────────────
+// ── Egg Collection Provider (Firestore) ───────────────────────────────────
 final eggRecordListProvider =
     StateNotifierProvider<EggRecordNotifier, List<EggRecordModel>>((ref) {
-  return EggRecordNotifier();
+  return EggRecordNotifier(ref);
 });
 
 class EggRecordNotifier extends StateNotifier<List<EggRecordModel>> {
-  EggRecordNotifier() : super([]) {}
+  final Ref _ref;
+  EggRecordNotifier(this._ref) : super([]) {
+    _load();
+  }
+
+  String get _uid => _ref.read(currentUidProvider);
+
+  Future<void> _load() async {
+    final uid = _uid;
+    if (uid.isEmpty) return;
+    try {
+      final docs = await FirestoreService.instance
+          .getAll(uid, FirestoreService.eggRecords);
+      state = docs.map(EggRecordModel.fromJson).toList()
+        ..sort((a, b) => b.date.compareTo(a.date));
+    } catch (_) {}
+  }
+
+  Future<void> _syncToFirestore(EggRecordModel record) async {
+    final uid = _uid;
+    if (uid.isEmpty) return;
+    try {
+      await FirestoreService.instance
+          .set(uid, FirestoreService.eggRecords, record.id, record.toJson());
+    } catch (_) {}
+  }
+
+  Future<void> _deleteFromFirestore(String id) async {
+    final uid = _uid;
+    if (uid.isEmpty) return;
+    try {
+      await FirestoreService.instance
+          .delete(uid, FirestoreService.eggRecords, id);
+    } catch (_) {}
+  }
 
   void addRecord(EggRecordModel record) {
     state = [record, ...state]; // newest first
-    // Auto-update egg stock
+    _syncToFirestore(record);
   }
 
   void deleteRecord(String id) {
     state = state.where((r) => r.id != id).toList();
+    _deleteFromFirestore(id);
   }
 
   void clearAll() => state = [];
@@ -48,6 +82,8 @@ class EggRecordNotifier extends StateNotifier<List<EggRecordModel>> {
           .fold(0, (sum, r) => sum + r.goodEggs);
     });
   }
+
+  Future<void> reload() => _load();
 }
 
 // ── Egg Stock Provider ────────────────────────────────────────────────────
@@ -65,17 +101,43 @@ class EggStockNotifier extends StateNotifier<int> {
   int get trays => state ~/ 30;
 }
 
-// ── Egg Sales Provider ────────────────────────────────────────────────────
+// ── Egg Sales Provider (Firestore) ────────────────────────────────────────
 final eggSaleListProvider =
     StateNotifierProvider<EggSaleNotifier, List<EggSaleModel>>((ref) {
-  return EggSaleNotifier();
+  return EggSaleNotifier(ref);
 });
 
 class EggSaleNotifier extends StateNotifier<List<EggSaleModel>> {
-  EggSaleNotifier() : super([]) {}
+  final Ref _ref;
+  EggSaleNotifier(this._ref) : super([]) {
+    _load();
+  }
+
+  String get _uid => _ref.read(currentUidProvider);
+
+  Future<void> _load() async {
+    final uid = _uid;
+    if (uid.isEmpty) return;
+    try {
+      final docs = await FirestoreService.instance
+          .getAll(uid, FirestoreService.eggSales);
+      state = docs.map(EggSaleModel.fromJson).toList()
+        ..sort((a, b) => b.date.compareTo(a.date));
+    } catch (_) {}
+  }
+
+  Future<void> _syncToFirestore(EggSaleModel sale) async {
+    final uid = _uid;
+    if (uid.isEmpty) return;
+    try {
+      await FirestoreService.instance
+          .set(uid, FirestoreService.eggSales, sale.id, sale.toJson());
+    } catch (_) {}
+  }
 
   void addSale(EggSaleModel sale) {
     state = [sale, ...state];
+    _syncToFirestore(sale);
   }
 
   void clearAll() => state = [];
@@ -83,73 +145,6 @@ class EggSaleNotifier extends StateNotifier<List<EggSaleModel>> {
   double get totalRevenue => state
       .where((s) => s.saleType == EggDispositionType.sale)
       .fold(0.0, (sum, s) => sum + (s.totalAmount ?? 0));
-}
 
-// ── Sample Data ───────────────────────────────────────────────────────────
-List<EggRecordModel> _sampleRecords() {
-  final now = DateTime.now();
-  return [
-    EggRecordModel(
-      id: _uuid.v4(), farmId: 'farm1', flockId: null,
-      date: now, totalEggs: 352, brokenEggs: 10,
-      gradeA: 280, gradeB: 50, gradeC: 12,
-      collectedBy: 'Nimal', createdAt: now,
-    ),
-    EggRecordModel(
-      id: _uuid.v4(), farmId: 'farm1', flockId: null,
-      date: now.subtract(const Duration(days: 1)),
-      totalEggs: 340, brokenEggs: 8, gradeA: 270, gradeB: 55, gradeC: 7,
-      collectedBy: 'Kamal', createdAt: now.subtract(const Duration(days: 1)),
-    ),
-    EggRecordModel(
-      id: _uuid.v4(), farmId: 'farm1', flockId: null,
-      date: now.subtract(const Duration(days: 2)),
-      totalEggs: 365, brokenEggs: 12, gradeA: 295, gradeB: 48, gradeC: 10,
-      collectedBy: 'Nimal', createdAt: now.subtract(const Duration(days: 2)),
-    ),
-    EggRecordModel(
-      id: _uuid.v4(), farmId: 'farm1', flockId: null,
-      date: now.subtract(const Duration(days: 3)),
-      totalEggs: 328, brokenEggs: 6, gradeA: 265, gradeB: 50, gradeC: 7,
-      collectedBy: 'Kamal', createdAt: now.subtract(const Duration(days: 3)),
-    ),
-    EggRecordModel(
-      id: _uuid.v4(), farmId: 'farm1', flockId: null,
-      date: now.subtract(const Duration(days: 4)),
-      totalEggs: 348, brokenEggs: 9, collectedBy: 'Nimal',
-      createdAt: now.subtract(const Duration(days: 4)),
-    ),
-    EggRecordModel(
-      id: _uuid.v4(), farmId: 'farm1', flockId: null,
-      date: now.subtract(const Duration(days: 5)),
-      totalEggs: 355, brokenEggs: 11, collectedBy: 'Nimal',
-      createdAt: now.subtract(const Duration(days: 5)),
-    ),
-    EggRecordModel(
-      id: _uuid.v4(), farmId: 'farm1', flockId: null,
-      date: now.subtract(const Duration(days: 6)),
-      totalEggs: 360, brokenEggs: 7, collectedBy: 'Kamal',
-      createdAt: now.subtract(const Duration(days: 6)),
-    ),
-  ];
+  Future<void> reload() => _load();
 }
-
-List<EggSaleModel> _sampleSales() => [
-  EggSaleModel(
-    id: _uuid.v4(), farmId: 'farm1',
-    saleType: EggDispositionType.sale,
-    quantity: 300, pricePerUnit: 28.0, totalAmount: 8400.0,
-    buyerName: 'Prasad Stores', date: DateTime.now(),
-  ),
-  EggSaleModel(
-    id: _uuid.v4(), farmId: 'farm1',
-    saleType: EggDispositionType.sale,
-    quantity: 240, pricePerUnit: 27.0, totalAmount: 6480.0,
-    buyerName: 'City Market', date: DateTime.now().subtract(const Duration(days: 2)),
-  ),
-  EggSaleModel(
-    id: _uuid.v4(), farmId: 'farm1',
-    saleType: EggDispositionType.personalUse,
-    quantity: 30, date: DateTime.now().subtract(const Duration(days: 1)),
-  ),
-];

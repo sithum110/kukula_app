@@ -1,46 +1,81 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
+import 'package:kukula_app/core/providers/auth_provider.dart';
+import 'package:kukula_app/core/services/firestore_service.dart';
 import 'package:kukula_app/core/services/local_storage_service.dart';
 import 'package:kukula_app/features/finance/finance_model.dart';
 
-const _uuid = Uuid();
-
 final financeProvider =
     StateNotifierProvider<FinanceNotifier, List<FinanceTransactionModel>>(
-        (ref) => FinanceNotifier());
+        (ref) => FinanceNotifier(ref));
 
 class FinanceNotifier
     extends StateNotifier<List<FinanceTransactionModel>> {
-  FinanceNotifier() : super([]) {
+  final Ref _ref;
+  FinanceNotifier(this._ref) : super([]) {
     _load();
   }
 
+  String get _uid => _ref.read(currentUidProvider);
+
   // ── Persistence ────────────────────────────────────────────────────────────
   Future<void> _load() async {
+    final uid = _uid;
+    if (uid.isNotEmpty) {
+      try {
+        final docs = await FirestoreService.instance
+            .getAll(uid, FirestoreService.transactions);
+        state = docs.map(FinanceTransactionModel.fromJson).toList()
+          ..sort((a, b) => b.date.compareTo(a.date));
+        return;
+      } catch (_) {}
+    }
+    // Fallback to local cache
     final raw = await LocalStorageService.loadFinance();
     state = raw.map(FinanceTransactionModel.fromJson).toList()
       ..sort((a, b) => b.date.compareTo(a.date));
   }
 
-  void _persist() {
+  void _persistLocal() {
     LocalStorageService.saveFinance(state.map((t) => t.toJson()).toList());
+  }
+
+  Future<void> _syncToFirestore(FinanceTransactionModel t) async {
+    final uid = _uid;
+    if (uid.isEmpty) return;
+    try {
+      await FirestoreService.instance
+          .set(uid, FirestoreService.transactions, t.id, t.toJson());
+    } catch (_) {}
+  }
+
+  Future<void> _deleteFromFirestore(String id) async {
+    final uid = _uid;
+    if (uid.isEmpty) return;
+    try {
+      await FirestoreService.instance
+          .delete(uid, FirestoreService.transactions, id);
+    } catch (_) {}
   }
 
   // ── Mutations ──────────────────────────────────────────────────────────────
   void addTransaction(FinanceTransactionModel t) {
     state = [t, ...state];
-    _persist();
+    _persistLocal();
+    _syncToFirestore(t);
   }
 
   void deleteTransaction(String id) {
     state = state.where((t) => t.id != id).toList();
-    _persist();
+    _persistLocal();
+    _deleteFromFirestore(id);
   }
 
   void clearAll() {
     state = [];
-    _persist();
+    _persistLocal();
   }
+
+  Future<void> reload() => _load();
 
   // ── Aggregates ─────────────────────────────────────────────────────────────
   double get totalIncome => state

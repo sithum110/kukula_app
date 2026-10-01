@@ -135,6 +135,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     if (!isWorker) {
       items.add(_NavItem(Icons.account_balance_wallet_outlined, Icons.account_balance_wallet, l10n.finance, AppRoutes.finance));
     }
+    // Livestock Trading is always accessible via drawer regardless of farmType
     return items;
   }
 }
@@ -669,6 +670,10 @@ class _AppDrawer extends StatelessWidget {
                       label: 'Stock',
                       route: AppRoutes.stock),
                   _DrawerItem(
+                      icon: Icons.storefront_outlined,
+                      label: 'Livestock Trading',
+                      route: AppRoutes.livestockTrading),
+                  _DrawerItem(
                       icon: Icons.medical_services_outlined,
                       label: 'Health',
                       route: AppRoutes.health),
@@ -770,41 +775,52 @@ class _StatCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.borderDark),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Text(icon, style: const TextStyle(fontSize: 20)),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(title,
-                      style: const TextStyle(
-                          fontSize: 12,
-                          color: AppColors.textSecondaryDark,
-                          fontWeight: FontWeight.w500),
-                      overflow: TextOverflow.ellipsis),
-                ),
-                if (onTap != null)
-                  const Icon(Icons.chevron_right,
-                      size: 16, color: AppColors.textHintDark),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(value,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: color)),
-            const SizedBox(height: 2),
-            Text(subtitle,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                    fontSize: 12, color: AppColors.textHintDark)),
-          ],
+        // ConstrainedBox prevents the "debugSize == size" assertion on Flutter web
+        // that occurs when Text(overflow: ellipsis) is in an Expanded flex child
+        child: LayoutBuilder(
+          builder: (context, constraints) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text(icon, style: const TextStyle(fontSize: 20)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(title,
+                        maxLines: 1,
+                        style: const TextStyle(
+                            fontSize: 12,
+                            color: AppColors.textSecondaryDark,
+                            fontWeight: FontWeight.w500),
+                        overflow: TextOverflow.ellipsis),
+                  ),
+                  if (onTap != null)
+                    const Icon(Icons.chevron_right,
+                        size: 16, color: AppColors.textHintDark),
+                ],
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: constraints.maxWidth,
+                child: Text(value,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: color)),
+              ),
+              const SizedBox(height: 2),
+              SizedBox(
+                width: constraints.maxWidth,
+                child: Text(subtitle,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                        fontSize: 12, color: AppColors.textHintDark)),
+              ),
+            ],
+          ),
         ),
       ),
     );

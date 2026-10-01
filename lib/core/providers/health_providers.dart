@@ -1,21 +1,61 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
+import 'package:kukula_app/core/providers/auth_provider.dart';
+import 'package:kukula_app/core/services/firestore_service.dart';
 import 'package:kukula_app/features/health/health_model.dart';
 
-const _uuid = Uuid();
-
-// ── Health Records Provider ────────────────────────────────────────────────
+// ── Health Records Provider (Firestore) ────────────────────────────────────
 final healthRecordListProvider =
     StateNotifierProvider<HealthRecordNotifier, List<HealthRecordModel>>((ref) {
-  return HealthRecordNotifier();
+  return HealthRecordNotifier(ref);
 });
 
 class HealthRecordNotifier extends StateNotifier<List<HealthRecordModel>> {
-  HealthRecordNotifier() : super([]) {}
+  final Ref _ref;
+  HealthRecordNotifier(this._ref) : super([]) {
+    _load();
+  }
 
-  void addRecord(HealthRecordModel record) => state = [record, ...state];
-  void deleteRecord(String id) =>
-      state = state.where((r) => r.id != id).toList();
+  String get _uid => _ref.read(currentUidProvider);
+
+  Future<void> _load() async {
+    final uid = _uid;
+    if (uid.isEmpty) return;
+    try {
+      final docs = await FirestoreService.instance
+          .getAll(uid, FirestoreService.healthRecords);
+      state = docs.map(HealthRecordModel.fromJson).toList()
+        ..sort((a, b) => b.date.compareTo(a.date));
+    } catch (_) {}
+  }
+
+  Future<void> _sync(HealthRecordModel record) async {
+    final uid = _uid;
+    if (uid.isEmpty) return;
+    try {
+      await FirestoreService.instance.set(
+          uid, FirestoreService.healthRecords, record.id, record.toJson());
+    } catch (_) {}
+  }
+
+  Future<void> _delete(String id) async {
+    final uid = _uid;
+    if (uid.isEmpty) return;
+    try {
+      await FirestoreService.instance
+          .delete(uid, FirestoreService.healthRecords, id);
+    } catch (_) {}
+  }
+
+  void addRecord(HealthRecordModel record) {
+    state = [record, ...state];
+    _sync(record);
+  }
+
+  void deleteRecord(String id) {
+    state = state.where((r) => r.id != id).toList();
+    _delete(id);
+  }
+
   void clearAll() => state = [];
 
   Map<String, List<HealthRecordModel>> get groupedByDate {
@@ -48,27 +88,71 @@ class HealthRecordNotifier extends StateNotifier<List<HealthRecordModel>> {
 
   String _month(int m) => ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][m];
+
+  Future<void> reload() => _load();
 }
 
-// ── Vaccination Schedule Provider ─────────────────────────────────────────
+// ── Vaccination Schedule Provider (Firestore) ─────────────────────────────
 final vaccinationScheduleProvider =
     StateNotifierProvider<VaccinationScheduleNotifier, List<VaccinationScheduleModel>>(
-        (ref) => VaccinationScheduleNotifier());
+        (ref) => VaccinationScheduleNotifier(ref));
 
 class VaccinationScheduleNotifier
     extends StateNotifier<List<VaccinationScheduleModel>> {
-  VaccinationScheduleNotifier() : super([]) {}
-
-  void addSchedule(VaccinationScheduleModel s) => state = [...state, s];
-
-  void markComplete(String id) {
-    state = state
-        .map((s) => s.id == id ? s.copyWith(isCompleted: true) : s)
-        .toList();
+  final Ref _ref;
+  VaccinationScheduleNotifier(this._ref) : super([]) {
+    _load();
   }
 
-  void deleteSchedule(String id) =>
-      state = state.where((s) => s.id != id).toList();
+  String get _uid => _ref.read(currentUidProvider);
+
+  Future<void> _load() async {
+    final uid = _uid;
+    if (uid.isEmpty) return;
+    try {
+      final docs = await FirestoreService.instance
+          .getAll(uid, FirestoreService.vaccinationSchedules);
+      state = docs.map(VaccinationScheduleModel.fromJson).toList();
+    } catch (_) {}
+  }
+
+  Future<void> _sync(VaccinationScheduleModel s) async {
+    final uid = _uid;
+    if (uid.isEmpty) return;
+    try {
+      await FirestoreService.instance.set(
+          uid, FirestoreService.vaccinationSchedules, s.id, s.toJson());
+    } catch (_) {}
+  }
+
+  Future<void> _delete(String id) async {
+    final uid = _uid;
+    if (uid.isEmpty) return;
+    try {
+      await FirestoreService.instance
+          .delete(uid, FirestoreService.vaccinationSchedules, id);
+    } catch (_) {}
+  }
+
+  void addSchedule(VaccinationScheduleModel s) {
+    state = [...state, s];
+    _sync(s);
+  }
+
+  void markComplete(String id) {
+    final updated = state
+        .map((s) => s.id == id ? s.copyWith(isCompleted: true) : s)
+        .toList();
+    state = updated;
+    final item = state.firstWhere((s) => s.id == id,
+        orElse: () => state.first);
+    _sync(item);
+  }
+
+  void deleteSchedule(String id) {
+    state = state.where((s) => s.id != id).toList();
+    _delete(id);
+  }
 
   void clearAll() => state = [];
 
@@ -88,35 +172,81 @@ class VaccinationScheduleNotifier
       .toList();
 
   int get alertCount => overdue.length + dueSoon.length;
+
+  Future<void> reload() => _load();
 }
 
-// ── Medicine Stock Provider ────────────────────────────────────────────────
+// ── Medicine Stock Provider (Firestore) ────────────────────────────────────
 final medicineStockProvider =
     StateNotifierProvider<MedicineStockNotifier, List<MedicineStockModel>>(
-        (ref) => MedicineStockNotifier());
+        (ref) => MedicineStockNotifier(ref));
 
 class MedicineStockNotifier extends StateNotifier<List<MedicineStockModel>> {
-  MedicineStockNotifier() : super([]) {}
+  final Ref _ref;
+  MedicineStockNotifier(this._ref) : super([]) {
+    _load();
+  }
 
-  void addItem(MedicineStockModel item) => state = [...state, item];
+  String get _uid => _ref.read(currentUidProvider);
+
+  Future<void> _load() async {
+    final uid = _uid;
+    if (uid.isEmpty) return;
+    try {
+      final docs = await FirestoreService.instance
+          .getAll(uid, FirestoreService.medicineStock);
+      state = docs.map(MedicineStockModel.fromJson).toList();
+    } catch (_) {}
+  }
+
+  Future<void> _sync(MedicineStockModel item) async {
+    final uid = _uid;
+    if (uid.isEmpty) return;
+    try {
+      await FirestoreService.instance
+          .set(uid, FirestoreService.medicineStock, item.id, item.toJson());
+    } catch (_) {}
+  }
+
+  Future<void> _delete(String id) async {
+    final uid = _uid;
+    if (uid.isEmpty) return;
+    try {
+      await FirestoreService.instance
+          .delete(uid, FirestoreService.medicineStock, id);
+    } catch (_) {}
+  }
+
+  void addItem(MedicineStockModel item) {
+    state = [...state, item];
+    _sync(item);
+  }
 
   void deductStock(String id, double qty) {
+    MedicineStockModel? updated;
     state = state.map((m) {
       if (m.id != id) return m;
-      return m.copyWith(
+      updated = m.copyWith(
           currentQty: (m.currentQty - qty).clamp(0, double.infinity));
+      return updated!;
     }).toList();
+    if (updated != null) _sync(updated!);
   }
 
   void addStock(String id, double qty) {
+    MedicineStockModel? updated;
     state = state.map((m) {
       if (m.id != id) return m;
-      return m.copyWith(currentQty: m.currentQty + qty);
+      updated = m.copyWith(currentQty: m.currentQty + qty);
+      return updated!;
     }).toList();
+    if (updated != null) _sync(updated!);
   }
 
-  void deleteItem(String id) =>
-      state = state.where((m) => m.id != id).toList();
+  void deleteItem(String id) {
+    state = state.where((m) => m.id != id).toList();
+    _delete(id);
+  }
 
   void clearAll() => state = [];
 
@@ -131,150 +261,6 @@ class MedicineStockNotifier extends StateNotifier<List<MedicineStockModel>> {
 
   int get alertCount =>
       lowStockItems.length + expiringItems.length + expiredItems.length;
-}
 
-// ── Sample Data ────────────────────────────────────────────────────────────
-List<HealthRecordModel> _sampleRecords() {
-  final now = DateTime.now();
-  return [
-    HealthRecordModel(
-      id: _uuid.v4(), farmId: 'farm1',
-      type: HealthRecordType.vaccination,
-      flockName: 'Flock A — Layers',
-      productName: 'Newcastle Disease (ND) Vaccine',
-      dosage: '0.5ml / bird', quantityUsed: 225.0,
-      notes: 'Eye-drop method. All birds treated.',
-      date: now.subtract(const Duration(days: 2)),
-      nextDueDate: now.add(const Duration(days: 28)),
-      administeredBy: 'Dr. Perera',
-      createdAt: now.subtract(const Duration(days: 2)),
-    ),
-    HealthRecordModel(
-      id: _uuid.v4(), farmId: 'farm1',
-      type: HealthRecordType.medication,
-      flockName: 'Batch Jan 2026',
-      productName: 'Amoxicillin 500mg',
-      dosage: '1g / litre of water',
-      quantityUsed: 10.0,
-      notes: 'Respiratory infection. 5-day course.',
-      date: now.subtract(const Duration(days: 1)),
-      nextDueDate: now.add(const Duration(days: 4)),
-      administeredBy: 'Nimal',
-      createdAt: now.subtract(const Duration(days: 1)),
-    ),
-    HealthRecordModel(
-      id: _uuid.v4(), farmId: 'farm1',
-      type: HealthRecordType.observation,
-      flockName: 'Flock B — Layers',
-      productName: 'Routine check',
-      notes: 'Minor feather pecking observed in Pen 2. Reduced density.',
-      date: now,
-      administeredBy: 'Kamal',
-      createdAt: now,
-    ),
-    HealthRecordModel(
-      id: _uuid.v4(), farmId: 'farm1',
-      type: HealthRecordType.treatment,
-      flockName: 'Batch Feb 2026',
-      productName: 'Vitamin E + Selenium',
-      dosage: '1ml / litre', quantityUsed: 5.0,
-      notes: 'Stress supplement after transport.',
-      date: now.subtract(const Duration(days: 5)),
-      administeredBy: 'Nimal',
-      createdAt: now.subtract(const Duration(days: 5)),
-    ),
-  ];
-}
-
-List<VaccinationScheduleModel> _sampleSchedule() {
-  final now = DateTime.now();
-  return [
-    VaccinationScheduleModel(
-      id: _uuid.v4(), farmId: 'farm1',
-      flockName: 'Flock A — Layers',
-      vaccineName: 'Newcastle Disease (Booster)',
-      dueDate: now.add(const Duration(days: 26)),
-      notes: 'Due at week 24',
-    ),
-    VaccinationScheduleModel(
-      id: _uuid.v4(), farmId: 'farm1',
-      flockName: 'Batch Jan 2026',
-      vaccineName: 'Gumboro (IBD)',
-      dueDate: now.add(const Duration(days: 3)),
-      notes: 'Day 21 vaccination',
-    ),
-    VaccinationScheduleModel(
-      id: _uuid.v4(), farmId: 'farm1',
-      flockName: 'Flock B — Layers',
-      vaccineName: 'Infectious Bronchitis (IB)',
-      dueDate: now.subtract(const Duration(days: 2)),
-      notes: 'OVERDUE — administer ASAP',
-    ),
-    VaccinationScheduleModel(
-      id: _uuid.v4(), farmId: 'farm1',
-      flockName: 'All Flocks',
-      vaccineName: 'Marek\'s Disease',
-      dueDate: now.add(const Duration(days: 45)),
-      isCompleted: true,
-    ),
-  ];
-}
-
-List<MedicineStockModel> _sampleMedicineStock() {
-  final now = DateTime.now();
-  return [
-    MedicineStockModel(
-      id: 'ms1', farmId: 'farm1',
-      name: 'Amoxicillin 500mg',
-      stockType: MedicineStockType.medicine,
-      unit: 'tablets', currentQty: 45,
-      lowStockThreshold: 50,
-      expiryDate: now.add(const Duration(days: 7)),
-      pricePerUnit: 15.0,
-      manufacturer: 'GSK Lanka',
-      createdAt: now.subtract(const Duration(days: 30)),
-    ),
-    MedicineStockModel(
-      id: 'ms2', farmId: 'farm1',
-      name: 'Newcastle Disease Vaccine',
-      stockType: MedicineStockType.vaccine,
-      unit: 'doses', currentQty: 500,
-      lowStockThreshold: 200,
-      expiryDate: now.add(const Duration(days: 60)),
-      pricePerUnit: 8.0,
-      manufacturer: 'Intervet',
-      createdAt: now.subtract(const Duration(days: 20)),
-    ),
-    MedicineStockModel(
-      id: 'ms3', farmId: 'farm1',
-      name: 'Vitamin E + Selenium',
-      stockType: MedicineStockType.medicine,
-      unit: 'ml', currentQty: 250,
-      lowStockThreshold: 100,
-      expiryDate: now.add(const Duration(days: 180)),
-      pricePerUnit: 2.5,
-      createdAt: now.subtract(const Duration(days: 60)),
-    ),
-    MedicineStockModel(
-      id: 'ms4', farmId: 'farm1',
-      name: 'Gumboro (IBD) Vaccine',
-      stockType: MedicineStockType.vaccine,
-      unit: 'doses', currentQty: 300,
-      lowStockThreshold: 150,
-      expiryDate: now.add(const Duration(days: 90)),
-      pricePerUnit: 12.0,
-      manufacturer: 'MSD Animal Health',
-      createdAt: now.subtract(const Duration(days: 10)),
-    ),
-    MedicineStockModel(
-      id: 'ms5', farmId: 'farm1',
-      name: 'Oxytetracycline',
-      stockType: MedicineStockType.medicine,
-      unit: 'g', currentQty: 30,
-      lowStockThreshold: 50,
-      expiryDate: now.subtract(const Duration(days: 5)), // expired!
-      pricePerUnit: 45.0,
-      createdAt: now.subtract(const Duration(days: 120)),
-    ),
-  ];
+  Future<void> reload() => _load();
 }
